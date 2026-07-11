@@ -105,7 +105,7 @@ JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key-change-me")
 @app.post("/api/login")
 def login(request: LoginRequest):
     """Authenticate user against MongoDB."""
-    if not engine or not engine.db:
+    if engine is None or engine.db is None:
         raise HTTPException(status_code=503, detail="Database not ready.")
         
     users_col = engine.db[config.USERS_COLLECTION]

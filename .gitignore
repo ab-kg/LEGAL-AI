@@ -1,0 +1,30 @@
+# Python environment
+__pycache__/
+*.py[cod]
+*.class
+.venv/
+venv/
+ENV/
+
+# Databases & local state
+legal_kg.json
+interactive_graph.html
+reports/
+
+# Generated test artifacts
+sample_legal_contract.pdf
+
+# Environment files
+.env
+
+# AI assistant context (local only)
+CONTEXT.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# AI Assistant files
+.antigravity/
+AGENTS.md
+HANDOFF.md

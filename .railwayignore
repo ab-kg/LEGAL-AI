@@ -1,0 +1,32 @@
+# Large dataset files (data is already in MongoDB Atlas)
+data/CUADv1.json
+data/CUADv1.zip
+
+# Jupyter notebooks (development-only)
+*.ipynb
+
+# Research artifacts (not needed at runtime)
+resources/
+tests/
+.vscode/
+benchmark_queries/
+reports/
+
+# Test files (not needed in production)
+tests/
+
+# Development scripts
+scripts/
+
+# Local state files
+chroma_db/
+legal_kg.json
+interactive_graph.html
+__pycache__/
+
+# Documentation
+CONTEXT.md
+README.md
+
+# AI assistant
+.antigravity/

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SetCONNECT — Legal AI GraphRAG</title>
+    <meta name="description" content="AI-powered legal contract intelligence with GraphRAG — grounded answers, knowledge graphs, and vector search.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="styles/main.css?v=3">
+    <link rel="stylesheet" href="styles/chat.css?v=5">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div class="logo-text">
+                            <span class="set">Set</span><span class="connect">CONNECT</span>
+                        </div>
+                        <div class="logo-tagline">Legal AI GraphRAG</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-menu-group">
+                <span class="menu-label">MAIN</span>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-tab="overview">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Overview</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tab="ingestion">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <span>Load Data</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tab="contracts">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>Contracts</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tab="legal-chat">
+                        <i class="bi bi-stars"></i>
+                        <span>AI Chat</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tab="graph">
+                        <i class="bi bi-share"></i>
+                        <span>Knowledge Graph</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="sidebar-menu-group session-list-group">
+                <span class="menu-label">RECENT SESSIONS</span>
+                <nav class="sidebar-nav" id="session-list" style="max-height: 35vh; overflow-y: auto; padding-right: 6px;">
+                    <div class="text-center text-muted" style="font-size: 11px; padding: 10px;">Loading sessions...</div>
+                </nav>
+            </div>
+
+            <div class="sidebar-menu-group mt-auto">
+                <span class="menu-label">QUICK ACTIONS</span>
+                <nav class="sidebar-nav quick-actions">
+                    <button class="nav-item action-btn" onclick="document.querySelector('[data-tab=\'ingestion\']').click()">
+                        <i class="bi bi-cloud-upload color-blue"></i>
+                        <span>Ingest Data</span>
+                    </button>
+                    <button class="nav-item action-btn" onclick="document.querySelector('[data-tab=\'legal-chat\']').click()">
+                        <i class="bi bi-chat-square-text color-purple"></i>
+                        <span>Ask AI</span>
+                    </button>
+                    <button class="nav-item action-btn" onclick="window.open('https://cloud.mongodb.com', '_blank')">
+                        <i class="bi bi-database-fill color-green"></i>
+                        <span>MongoDB Atlas</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="sidebar-user">
+                <div class="user-avatar">SC</div>
+                <div class="user-info">
+                    <span class="user-name">SCG Admin</span>
+                    <span class="user-role">Administrator</span>
+                </div>
+                <i class="bi bi-chevron-right ms-auto color-blue"></i>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="logo-area">
+                    <div class="logo-text">
+                        <h1 style="font-size: 24px; font-weight: bold; font-style: italic; letter-spacing: 1px;">Set<span style="color: var(--color-primary); font-weight: normal;">CONNECT</span></h1>
+                        <span style="font-size: 13px; color: var(--text-secondary);">Legal AI GraphRAG • Contract Intelligence • Knowledge Graph</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="status-pill">
+                        <span class="dot" id="api-status-dot"></span>
+                        <span id="api-status-text">Connecting...</span>
+                    </div>
+                    <button class="icon-btn theme-toggle" id="themeToggle" title="Toggle theme">
+                        <i class="bi bi-moon-stars"></i>
+                    </button>
+                    <button class="icon-btn" title="Notifications">
+                        <i class="bi bi-bell"></i>
+                    </button>
+                    <div class="user-avatar small">SC</div>
+                </div>
+            </header>
+
+            <div id="top-nav-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 16px; min-width: 0;">
+                <nav class="top-pills-nav" id="top-pills-nav" style="min-width: 0; flex: 1;">
+                    <div class="pill-card active" data-tab="overview">
+                        <div class="pill-icon color-blue"><i class="bi bi-speedometer2"></i></div>
+                        <div class="pill-text">
+                            <strong>Overview</strong>
+                            <span>Dashboard</span>
+                        </div>
+                    </div>
+                    <div class="pill-card" data-tab="ingestion">
+                        <div class="pill-icon color-purple"><i class="bi bi-cloud-arrow-up"></i></div>
+                        <div class="pill-text">
+                            <strong>Load Data</strong>
+                            <span>Ingest & manage</span>
+                        </div>
+                    </div>
+                    <div class="pill-card" data-tab="legal-chat">
+                        <div class="pill-icon color-green"><i class="bi bi-stars"></i></div>
+                        <div class="pill-text">
+                            <strong>AI Chat</strong>
+                            <span>Grounded answers</span>
+                        </div>
+                    </div>
+                    <div class="pill-card" data-tab="contracts">
+                        <div class="pill-icon color-orange"><i class="bi bi-file-text"></i></div>
+                        <div class="pill-text">
+                            <strong>Contracts</strong>
+                            <span>Indexed documents</span>
+                        </div>
+                    </div>
+                    <div class="pill-card" data-tab="graph">
+                        <div class="pill-icon color-purple"><i class="bi bi-diagram-3"></i></div>
+                        <div class="pill-text">
+                            <strong>Graph</strong>
+                            <span>Entity relationships</span>
+                    </div>
+                </nav>
+            </div>
+
+            <div id="content-area" class="content-area">
+
+                <!-- Overview -->
+                <div class="tab-pane active" id="overview">
+                    <div class="dashboard-grid-main">
+                        <div class="dashboard-left">
+                            <div class="panel-card p-4">
+                                <div class="section-header mb-4 d-flex justify-content-between align-items-center">
+                                    <h3>System Overview <i class="bi bi-info-circle text-muted"></i></h3>
+                                    <a href="https://cloud.mongodb.com" target="_blank" class="btn-atlas">
+                                        <i class="bi bi-database"></i> MongoDB Atlas
+                                    </a>
+                                </div>
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <div class="stat-icon-small color-blue mb-2"><i class="bi bi-file-earmark-text"></i></div>
+                                        <h2 id="stat-contracts">—</h2>
+                                        <p>Contracts Indexed</p>
+                                        <span class="stat-meta">Active sources</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon-small color-purple mb-2"><i class="bi bi-layers"></i></div>
+                                        <h2 id="stat-chunks">—</h2>
+                                        <p>Vector Chunks</p>
+                                        <span class="stat-meta">Embedded &amp; indexed</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon-small color-orange mb-2"><i class="bi bi-people"></i></div>
+                                        <h2 id="stat-sessions">—</h2>
+                                        <p>Active Sessions</p>
+                                        <span class="stat-meta">Live now</span>
+                                    </div>
+                                </div>
+
+                                <div class="chart-section">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h3>Query Activity</h3>
+                                        <select class="form-select">
+                                            <option>Last 7 Days</option>
+                                        </select>
+                                    </div>
+                                    <div class="chart-wrapper">
+                                        <canvas id="trendChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-right">
+                            <div class="panel-card p-4 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h3 class="section-header" style="margin:0">Recent Activity</h3>
+                                    <a href="#" class="link-sm">View all</a>
+                                </div>
+                                <div class="activity-feed" id="activity-feed">
+                                    <div class="text-center text-muted py-4">Loading activity...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-card mt-4 p-4">
+                        <div class="section-header mb-3">
+                            <h3>Quick Workflows</h3>
+                        </div>
+                        <div class="workflows-row">
+                            <div class="workflow-box" onclick="prefillChat('Analyze the primary obligations in these contracts')">
+                                <div class="wf-icon color-blue"><i class="bi bi-file-text"></i></div>
+                                <div class="wf-body">
+                                    <h4>Analyze Contracts</h4>
+                                    <p>Track obligations &amp; key terms</p>
+                                    <span class="wf-sub">End-to-end visibility</span>
+                                </div>
+                                <div class="wf-footer text-blue">Open <i class="bi bi-arrow-right"></i></div>
+                            </div>
+                            <div class="workflow-box" onclick="prefillChat('What is the governing law?')">
+                                <div class="wf-icon color-green"><i class="bi bi-geo-alt"></i></div>
+                                <div class="wf-body">
+                                    <h4>Governing Law</h4>
+                                    <p>Jurisdiction &amp; venue analysis</p>
+                                    <span class="wf-sub">Compliance check</span>
+                                </div>
+                                <div class="wf-footer text-green">Open <i class="bi bi-arrow-right"></i></div>
+                            </div>
+                            <div class="workflow-box" onclick="prefillChat('Are there any non-compete clauses?')">
+                                <div class="wf-icon color-orange"><i class="bi bi-shield-lock"></i></div>
+                                <div class="wf-body">
+                                    <h4>Non-Compete Check</h4>
+                                    <p>Restrictive covenant review</p>
+                                    <span class="wf-sub">Risk assessment</span>
+                                </div>
+                                <div class="wf-footer text-orange">Open <i class="bi bi-arrow-right"></i></div>
+                            </div>
+                            <div class="workflow-box" onclick="prefillChat('Summarize payment terms')">
+                                <div class="wf-icon color-purple"><i class="bi bi-cash-stack"></i></div>
+                                <div class="wf-body">
+                                    <h4>Payment Terms</h4>
+                                    <p>Financial obligations summary</p>
+                                    <span class="wf-sub">Smart extraction</span>
+                                </div>
+                                <div class="wf-footer text-purple">Open <i class="bi bi-arrow-right"></i></div>
+                            </div>
+                            <div class="workflow-box" onclick="document.querySelector('[data-tab=\'graph\']').click()">
+                                <div class="wf-icon color-blue"><i class="bi bi-share"></i></div>
+                                <div class="wf-body">
+                                    <h4>Graph Explorer</h4>
+                                    <p>Visualize entity relationships</p>
+                                    <span class="wf-sub">Interactive KG</span>
+                                </div>
+                                <div class="wf-footer text-blue">Open <i class="bi bi-arrow-right"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Chat -->
+                <div class="tab-pane" id="legal-chat" style="height: 100%;">
+                    <div class="panel-card chat-container">
+                        <div class="chat-header">
+                            <div>
+                                <h2>Legal AI Assistant</h2>
+                                <p class="chat-desc">Ask questions about your contracts. Answers are grounded in your indexed documents and knowledge graph.</p>
+                                <div id="session-info">Initializing session...</div>
+                            </div>
+                            <div class="d-flex" style="gap: 8px;">
+                                <button id="btn-session-graph" class="btn-ghost" title="Knowledge Graph for Session">
+                                    <i class="bi bi-diagram-3 color-purple"></i>
+                                </button>
+                                <button id="btn-session-contracts" class="btn-ghost" title="Contract Summary">
+                                    <i class="bi bi-file-earmark-text color-blue"></i>
+                                </button>
+                                <button id="btn-session-chunks" class="btn-ghost" title="Vector Chunks">
+                                    <i class="bi bi-layers color-orange"></i>
+                                </button>
+                                <button id="btn-new-session" class="btn-primary" style="padding: 6px 12px; font-size: 13px; border-radius: 6px; border: none; background: #3b82f6; color: white;">
+                                    <i class="bi bi-plus-circle"></i> New Session
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="chat-suggestions">
+                            <button class="suggestion-chip" onclick="prefillChat('What is the governing law?')">Governing law</button>
+                            <button class="suggestion-chip" onclick="prefillChat('Are there any non-compete clauses?')">Non-compete clauses</button>
+                            <button class="suggestion-chip" onclick="prefillChat('Summarize payment terms')">Payment terms</button>
+                            <button class="suggestion-chip" onclick="prefillChat('What are the termination conditions?')">Termination</button>
+                        </div>
+
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-message-wrapper">
+                                <div class="chat-message bot">
+                                    <div class="chat-avatar"><i class="bi bi-stars"></i></div>
+                                    <div class="message-content">
+                                        <p>Welcome to <strong>SetCONNECT Legal AI</strong>. I'm connected to your GraphRAG pipeline — upload contracts or ask me anything about your indexed legal documents.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-container">
+                            <div class="chat-input-wrapper">
+                                <button id="btn-chat-upload" title="Upload PDF" class="icon-btn-upload"><i class="bi bi-plus-lg"></i></button>
+                                <input type="file" id="chat-pdf-upload" accept="application/pdf" hidden>
+                                <input type="text" id="chat-input" placeholder="Ask about governing law, obligations, clauses..." autocomplete="off">
+                                <button id="btn-send" title="Send message"><i class="bi bi-arrow-up"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ingestion -->
+                <div class="tab-pane" id="ingestion">
+                    <div class="panel-card p-5 upload-panel">
+                        <div class="upload-hero-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                        <h2>Upload Contract Data</h2>
+                        <p class="text-muted">PDF contracts are parsed, chunked, embedded, and added to your knowledge graph automatically.</p>
+
+                        <div class="upload-zone" id="upload-zone">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            <h4>Drop your PDF here or click to browse</h4>
+                            <p>Supports legal contracts up to 10MB</p>
+                            <input type="file" id="pdf-upload" accept="application/pdf" hidden>
+                        </div>
+
+                        <div id="upload-status" class="mt-4" style="display:none">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span id="upload-filename" style="font-size:14px;font-weight:600">document.pdf</span>
+                                <span id="upload-percentage" class="text-blue" style="font-size:14px;font-weight:600">Processing...</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="upload-progress" class="progress-bar-fill" style="width:0%"></div>
+                            </div>
+                            <p id="upload-message" class="text-muted mt-2" style="font-size:12px">Extracting knowledge graph triples...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contracts -->
+                <div class="tab-pane" id="contracts">
+                    <div class="panel-card p-4">
+                        <!-- Sessions List View -->
+                        <div id="contracts-list-view">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="section-header" style="margin:0;font-size:18px">Indexed Contracts by Session</h3>
+                                <button class="btn-primary" onclick="loadContracts()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr style="position: sticky; top: 0; background: var(--panel-bg, #1e293b); z-index: 10;">
+                                            <th>Session Name</th>
+                                            <th style="text-align:right">Contracts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="contracts-sessions-body">
+                                        <tr>
+                                            <td colspan="2" class="text-center text-muted" style="padding:24px">Loading sessions...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Session Detail View -->
+                        <div id="contracts-detail-view" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <button class="btn-ghost" onclick="showContractsList()" style="margin-right:12px; padding:6px 12px; background:rgba(0,0,0,0.05); border-radius:6px; font-weight:600;">
+                                        <i class="bi bi-arrow-left"></i> Back
+                                    </button>
+                                    <h3 class="section-header d-inline" id="contracts-detail-title" style="margin:0;font-size:18px">Contracts</h3>
+                                </div>
+                                <button class="btn-primary" onclick="viewSessionContracts(currentContractsSessionId)">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                            <div id="contracts-detail-container" style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="text-center text-muted" style="padding:24px">Loading contracts...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graph -->
+                <div class="tab-pane" id="graph">
+                    <div class="panel-card p-4 graph-panel">
+                        <!-- Sessions List View -->
+                        <div id="graph-list-view">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="section-header" style="margin:0;font-size:18px">Knowledge Graph by Session</h3>
+                                <button class="btn-primary" onclick="loadGraph()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Session Name</th>
+                                            <th style="text-align:right">Contracts Indexed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="graph-sessions-body">
+                                        <tr>
+                                            <td colspan="2" class="text-center text-muted" style="padding:24px">Loading sessions...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Graph Detail View -->
+                        <div id="graph-detail-view" style="display: none; height: 100%; display: flex; flex-direction: column;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <button class="btn-ghost" onclick="showGraphList()" style="margin-right:12px; padding:6px 12px; background:rgba(0,0,0,0.05); border-radius:6px; font-weight:600;">
+                                        <i class="bi bi-arrow-left"></i> Back
+                                    </button>
+                                    <h3 class="section-header d-inline" id="graph-detail-title" style="margin:0;font-size:18px">Visualizer</h3>
+                                </div>
+                                <button class="btn-primary" onclick="viewSessionGraph(currentGraphSessionId)">
+                                    <i class="bi bi-share"></i> Render Graph
+                                </button>
+                            </div>
+                            <div id="graph-container" style="flex:1; position:relative; border:1px solid var(--border-color); border-radius:8px; overflow:hidden;">
+                                <div id="graph-placeholder">
+                                    <i class="bi bi-share"></i>
+                                    <p class="text-muted">Click <strong>Render Graph</strong> to visualize contract entity relationships</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js?v=12"></script>
+</body>
+</html>

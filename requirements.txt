@@ -1,0 +1,26 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Core API Server
+fastapi
+python-multipart
+uvicorn[standard]
+python-dotenv
+pydantic
+
+# Knowledge Graph (in-memory graph structure)
+networkx
+
+# Vector DB & Embeddings
+sentence-transformers
+torch
+
+# MongoDB Atlas (secure TLS connection)
+pymongo[srv]
+certifi
+
+# LLM Generation (Groq & Gemini Cloud)
+groq
+google-generativeai
+
+# PDF Parsing
+pypdf

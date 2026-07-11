@@ -1,0 +1,33 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Graph Data Structure
+networkx
+
+# Vector Database & Embeddings
+sentence-transformers
+
+# PyTorch (CPU-only fetched via CPU index above)
+torch
+
+# MongoDB Atlas Secure Connection
+pymongo[srv]
+certifi
+
+# LLM Generation
+groq
+google-generativeai
+
+# Web Backend & Utilities
+fastapi
+python-multipart
+uvicorn
+python-dotenv
+pydantic
+pandas
+tqdm
+requests
+
+# PDF Ingestion & Test Generation
+pypdf
+reportlab
+

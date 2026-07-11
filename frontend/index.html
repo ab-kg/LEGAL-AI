@@ -54,6 +54,10 @@
                         <i class="bi bi-share"></i>
                         <span>Knowledge Graph</span>
                     </a>
+                    <a href="#" class="nav-item" data-tab="admin">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Admin Panel</span>
+                    </a>
                 </nav>
             </div>
 
@@ -82,20 +86,35 @@
                 </nav>
             </div>
 
-            <div class="sidebar-user">
+            <div class="sidebar-user" id="sidebar-user" style="cursor: pointer;" onclick="logout()">
                 <div class="user-avatar">SC</div>
                 <div class="user-info">
-                    <span class="user-name">SCG Admin</span>
-                    <span class="user-role">Administrator</span>
+                    <span class="user-name" id="display-username">Administrator</span>
+                    <span class="user-role">Sign Out</span>
                 </div>
-                <i class="bi bi-chevron-right ms-auto color-blue"></i>
+                <i class="bi bi-box-arrow-right ms-auto color-red"></i>
             </div>
+            <script>
+                // Show dynamic username
+                const userObj = JSON.parse(sessionStorage.getItem('sc_user') || '{}');
+                if (userObj.username) {
+                    document.getElementById('display-username').textContent = userObj.username;
+                }
+                function logout() {
+                    sessionStorage.removeItem('sc_token');
+                    sessionStorage.removeItem('sc_user');
+                    window.location.href = '/login.html';
+                }
+            </script>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
             <header class="top-header">
                 <div class="logo-area">
+                    <button class="icon-btn" id="btn-mobile-nav" title="Menu" style="display: none; margin-right: 12px;">
+                        <i class="bi bi-list" style="font-size: 24px;"></i>
+                    </button>
                     <div class="logo-text">
                         <h1 style="font-size: 24px; font-weight: bold; font-style: italic; letter-spacing: 1px;">Set<span style="color: var(--color-primary); font-weight: normal;">CONNECT</span></h1>
                         <span style="font-size: 13px; color: var(--text-secondary);">Legal AI GraphRAG • Contract Intelligence • Knowledge Graph</span>
@@ -446,6 +465,69 @@
                                     <p class="text-muted">Click <strong>Render Graph</strong> to visualize contract entity relationships</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Panel -->
+                <div class="tab-pane" id="admin">
+                    <div class="panel-card p-4 h-100">
+                        <div class="section-header mb-4 d-flex justify-content-between align-items-center">
+                            <h3>Admin Dashboard <i class="bi bi-shield-lock color-blue"></i></h3>
+                            <button class="btn-primary" onclick="alert('User management coming soon')">
+                                <i class="bi bi-person-plus"></i> Add User
+                            </button>
+                        </div>
+                        <p class="text-muted mb-4">Manage users, system configurations, and security settings.</p>
+                        
+                        <div class="workflows-row mb-4">
+                            <div class="workflow-box">
+                                <div class="wf-icon color-blue"><i class="bi bi-people"></i></div>
+                                <div class="wf-body">
+                                    <h4>User Accounts</h4>
+                                    <p>Manage access control</p>
+                                    <span class="wf-sub">1 Active User</span>
+                                </div>
+                            </div>
+                            <div class="workflow-box">
+                                <div class="wf-icon color-green"><i class="bi bi-server"></i></div>
+                                <div class="wf-body">
+                                    <h4>System Health</h4>
+                                    <p>All systems operational</p>
+                                    <span class="wf-sub">GraphRAG Online</span>
+                                </div>
+                            </div>
+                            <div class="workflow-box">
+                                <div class="wf-icon color-orange"><i class="bi bi-shield-check"></i></div>
+                                <div class="wf-body">
+                                    <h4>Security Logs</h4>
+                                    <p>View authentication events</p>
+                                    <span class="wf-sub">Secure</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive mt-4">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th style="text-align:right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>admin</strong></td>
+                                        <td><span style="background: rgba(59, 130, 246, 0.1); color: var(--color-blue); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Administrator</span></td>
+                                        <td><span class="text-green"><i class="bi bi-circle-fill" style="font-size: 8px;"></i> Active</span></td>
+                                        <td style="text-align:right">
+                                            <button class="btn-ghost" title="Edit"><i class="bi bi-pencil"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

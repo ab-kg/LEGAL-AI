@@ -24,3 +24,7 @@ google-generativeai
 
 # PDF Parsing
 pypdf
+
+# Authentication
+bcrypt
+PyJWT

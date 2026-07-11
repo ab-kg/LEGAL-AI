@@ -3,10 +3,18 @@ let sessionId = null;
 let trendChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Authentication Check
+    const token = sessionStorage.getItem('sc_token');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
+    }
+
     initTheme();
     initTabs();
     initChat();
     initUpload();
+    initMobileNav();
 
     await checkHealth();
     await createNewSession();
@@ -14,6 +22,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     fetchGlobalActivity();
     initChart();
 });
+
+function initMobileNav() {
+    const hamburgerBtn = document.getElementById('btn-mobile-nav');
+    const sidebar = document.querySelector('.sidebar');
+    if (hamburgerBtn && sidebar) {
+        hamburgerBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking a nav item on mobile
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
+    }
+}
 
 /* ─── Global Activity ─── */
 async function fetchGlobalActivity() {

@@ -26,6 +26,11 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini").strip().lower()
 CHUNKS_COLLECTION = os.getenv("CHUNKS_COLLECTION", "chunks")
 KG_NODES_COLLECTION = os.getenv("KG_NODES_COLLECTION", "kg_nodes")
 KG_EDGES_COLLECTION = os.getenv("KG_EDGES_COLLECTION", "kg_edges")
+USERS_COLLECTION = os.getenv("USERS_COLLECTION", "users")
+
+# ─── ADMIN CREDENTIALS ──────────────────────────────────────────
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin").strip()
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "password123").strip()
 
 # ─── MODELS ─────────────────────────────────────────────────────
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"

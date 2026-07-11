@@ -31,6 +31,18 @@ async def lifespan(app: FastAPI):
     if engine.db is not None:
         memory = ChatMemory(engine.db)
         print("💬 Chat memory ready (MongoDB Atlas).")
+        
+        # Initialize admin user
+        users_col = engine.db[config.USERS_COLLECTION]
+        if users_col.count_documents({"username": config.ADMIN_USERNAME}) == 0:
+            import bcrypt
+            hashed_pw = bcrypt.hashpw(config.ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt())
+            users_col.insert_one({
+                "username": config.ADMIN_USERNAME,
+                "password": hashed_pw.decode('utf-8'),
+                "role": "admin"
+            })
+            print(f"👤 Created default admin user: {config.ADMIN_USERNAME}")
     else:
         print("⚠️ No MongoDB — chat memory disabled (sessions are ephemeral).")
 
@@ -65,6 +77,10 @@ class ChatRequest(BaseModel):
     query: str
     session_id: Optional[str] = None
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
 
 # ==========================================
 # 🔧 ENDPOINTS
@@ -78,6 +94,38 @@ def health_check():
         "engine_ready": engine is not None,
         "memory_enabled": memory is not None,
     }
+
+import bcrypt
+import jwt
+from datetime import datetime, timedelta
+import os
+
+JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key-change-me")
+
+@app.post("/api/login")
+def login(request: LoginRequest):
+    """Authenticate user against MongoDB."""
+    if not engine or not engine.db:
+        raise HTTPException(status_code=503, detail="Database not ready.")
+        
+    users_col = engine.db[config.USERS_COLLECTION]
+    user = users_col.find_one({"username": request.username})
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    if not bcrypt.checkpw(request.password.encode('utf-8'), user["password"].encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    # Generate simple token (expiring in 24h)
+    payload = {
+        "sub": user["username"],
+        "role": user.get("role", "user"),
+        "exp": datetime.utcnow() + timedelta(days=1)
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    
+    return {"token": token, "username": user["username"], "role": user.get("role", "user")}
 
 
 @app.post("/api/session")

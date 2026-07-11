@@ -1161,25 +1161,58 @@ body::after {
 }
 
 @media (max-width: 900px) {
-    .sidebar { width: 72px; }
+    .workflows-row { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    #btn-mobile-nav { display: flex !important; }
+    
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        bottom: 0;
+        z-index: 1000;
+        width: 260px;
+        transition: left var(--transition);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .sidebar.active {
+        left: 0;
+    }
+    
+    /* Restore sidebar elements that were hidden in old css */
     .sidebar .logo-text,
     .sidebar .logo-tagline,
     .sidebar .menu-label,
     .nav-item span,
     .sidebar-user .user-info,
-    .sidebar-user .bi-chevron-right { display: none; }
-    .sidebar-header { padding: 0 12px 20px; }
-    .sidebar-menu-group { padding: 8px 10px; }
-    .nav-item { justify-content: center; padding: 12px; }
-    .sidebar-user { justify-content: center; margin: 12px 10px; }
-    .workflows-row { grid-template-columns: repeat(2, 1fr); }
-    .stats-grid { grid-template-columns: 1fr; }
-    .top-pills-nav { gap: 8px; }
-    .pill-card { min-width: 160px; }
+    .sidebar-user .bi-box-arrow-right { display: block; }
+    
+    .nav-item { justify-content: flex-start; padding: 10px 14px; }
+    
+    .top-header { flex-direction: column; align-items: stretch; gap: 12px; }
+    .logo-area { width: 100%; display: flex; align-items: center; justify-content: flex-start; }
+    .header-actions { width: 100%; display: flex; justify-content: flex-end; }
+    
+    .top-pills-nav {
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+    }
+    
+    .pill-card { scroll-snap-align: start; min-width: 180px; }
+    
+    .dashboard-left, .dashboard-right { width: 100%; }
+    
+    .main-content { padding: 12px; }
+    .workflows-row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
-    .main-content { padding: 16px; }
-    .workflows-row { grid-template-columns: 1fr; }
-    .header-titles h1 { font-size: 22px; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .header-actions .status-pill { font-size: 11px; padding: 4px 8px; }
 }

@@ -8,12 +8,15 @@ from pymongo import MongoClient
 import core.common.config as config
 
 print("Connecting to MongoDB...")
+
 client = MongoClient(config.MONGO_URI)
 db = client[config.MONGO_DB_NAME]
 
 print("Searching for session starting with '1cad946f'...")
 # Find the exact session ID
+
 session = db[config.CHAT_SESSIONS_COLLECTION].find_one({"_id": {"$regex": "^1cad946f"}})
+
 
 if session:
     session_id = session["_id"]
@@ -42,8 +45,7 @@ else:
     # Maybe the session was already deleted from chat_sessions but orphaned chunks remain?
     res2 = db[config.CHUNKS_COLLECTION].delete_many({"metadata.session_id": {"$regex": "^1cad946f"}})
     res3 = db[config.KG_NODES_COLLECTION].delete_many({"session_id": {"$regex": "^1cad946f"}})
-    res4 = db[config.KG_EDGES_COLLECTION].delete_many({"session_id": {"$regex": "^1cad946f"}})
-    
+    res4 = db[config.KG_EDGES_COLLECTION].delete_many({"session_id": {"$regex": "^1cad946f"}})    
     print(f"Deleted orphaned chunks: {res2.deleted_count}")
     print(f"Deleted orphaned kg_nodes: {res3.deleted_count}")
     print(f"Deleted orphaned kg_edges: {res4.deleted_count}")

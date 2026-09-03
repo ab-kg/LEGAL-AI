@@ -33,7 +33,7 @@ class LegalGraphRAG:
 
     def __init__(self):
         print("🚀 Booting Legal GraphRAG Engine...")
-
+        
         # ── Embedding Model ──────────────────────────────────────
         self.device = (
             "cuda" if torch.cuda.is_available()

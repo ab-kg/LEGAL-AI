@@ -27,7 +27,7 @@ def load_cuad_dataset():
     """
     zip_path = os.path.join("resources", "data", "CUADv1.zip")
     json_path = os.path.join("resources", "data", "CUADv1.json")
-    
+
     # 1. Try Loading from Local ZIP (Highly recommended for Git/GitHub Actions to keep repo light)
     if os.path.exists(zip_path):
         print(f"Found local compressed dataset: {zip_path}. Loading...")
@@ -51,7 +51,7 @@ def load_cuad_dataset():
             return _parse_squad_json(cuad_data)
         except Exception as e:
             print(f"Failed to load raw JSON: {e}. Falling back...")
-            
+
     # 3. Fallback to Hugging Face Datasets Hub
     print("No local dataset found in 'data/'. Falling back to Hugging Face...")
     from datasets import load_dataset
@@ -86,10 +86,8 @@ def get_cuad_contracts(num_samples=5):
     
     unique_contexts = list(set(dataset["context"]))
     print(f"Total unique contracts found in CUAD: {len(unique_contexts)}")
-    
     samples = unique_contexts[:num_samples]
     print(f"Returning {len(samples)} contracts for processing.")
-    
     return samples
 
 if __name__ == "__main__":

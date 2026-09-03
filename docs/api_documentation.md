@@ -209,11 +209,8 @@ Upload a legal contract PDF for session-scoped retrieval.
 ```
 
 ### `GET /api/session/{session_id}/graph`
-
 Returns KG nodes and edges extracted for this session.
-
 **Response `200`:**
-
 ```json
 {
   "session_id": "0dfb6c6b-67a6-4a4a-9351-ccb82b13c7db",

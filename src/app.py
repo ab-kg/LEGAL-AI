@@ -45,7 +45,6 @@ async def lifespan(app: FastAPI):
             print(f"👤 Created default admin user: {config.ADMIN_USERNAME}")
     else:
         print("⚠️ No MongoDB — chat memory disabled (sessions are ephemeral).")
-
     yield
     print("🛑 Shutting down.")
 
@@ -124,7 +123,6 @@ def login(request: LoginRequest):
         "exp": datetime.utcnow() + timedelta(days=1)
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
-    
     return {"token": token, "username": user["username"], "role": user.get("role", "user")}
 
 
@@ -141,6 +139,7 @@ def list_sessions():
     if not memory:
         return {"sessions": [], "note": "Memory disabled — no MongoDB."}
     return {"sessions": memory.list_sessions()}
+
 
 @app.get("/api/activity/global")
 def global_activity():
@@ -164,6 +163,7 @@ def global_activity():
             
     return {"activity": activities}
 
+
 @app.delete("/api/session/{session_id}")
 def delete_session(session_id: str):
     """Delete a session completely."""
@@ -180,6 +180,7 @@ def delete_session(session_id: str):
 
 class SessionRenameRequest(BaseModel):
     title: str
+
 
 @app.put("/api/session/{session_id}/rename")
 def rename_session(session_id: str, request: SessionRenameRequest):
@@ -224,12 +225,10 @@ async def ingest_pdf(session_id: str, file: UploadFile = File(...)):
     
     try:
         pdf_bytes = await file.read()
-        
         if memory:
             if not memory.has_session(session_id):
                 memory.create_session(session_id, title=f"Upload: {file.filename}")
             memory.log_activity(session_id, f"Ingested PDF: {file.filename}", "Success")
-            
         # Call RAG engine to ingest
         result = engine.ingest_pdf(file.filename, pdf_bytes, session_id)
         
@@ -254,9 +253,7 @@ def get_session_chunks(session_id: str):
     """Verify if a session has ingested PDF chunks and return metadata & text snippets."""
     if not engine:
         raise HTTPException(status_code=503, detail="Engine still booting. Try again shortly.")
-    
     session_id = sanitize_session_id(session_id)
-    
     if engine.db is None:
         return {
             "session_id": session_id,
@@ -308,7 +305,6 @@ def get_session_graph(session_id: str):
         raise HTTPException(status_code=503, detail="Engine still booting. Try again shortly.")
     
     session_id = sanitize_session_id(session_id)
-    
     if engine.db is None:
         return {
             "session_id": session_id,
@@ -316,11 +312,10 @@ def get_session_graph(session_id: str):
             "edges": [],
             "note": "MongoDB is not connected. Local fallback mode has no PDF storage."
         }
-        
     try:
         nodes = list(engine.db[config.KG_NODES_COLLECTION].find({"session_id": session_id}))
         edges = list(engine.db[config.KG_EDGES_COLLECTION].find({"session_id": session_id}))
-        
+
         # Format nodes and edges for JSON serialization (clean BSON ObjectIds to string)
         formatted_nodes = []
         for n in nodes:
@@ -334,13 +329,13 @@ def get_session_graph(session_id: str):
             if "_id" in formatted_e:
                 formatted_e["_id"] = str(formatted_e["_id"])
             formatted_edges.append(formatted_e)
-            
+
         if memory and len(formatted_nodes) > 0:
             try:
                 memory.log_activity(session_id, "Visualized Knowledge Graph", "Info")
             except Exception as e:
                 print(f"Failed to log activity: {e}")
-            
+
         return {
             "session_id": session_id,
             "nodes_count": len(formatted_nodes),
@@ -359,19 +354,16 @@ def get_session_contracts_summary(session_id: str):
         raise HTTPException(status_code=503, detail="Engine still booting. Try again shortly.")
     
     session_id = sanitize_session_id(session_id)
-    
     if engine.db is None:
         return {
             "session_id": session_id,
             "contracts": [],
             "note": "MongoDB is not connected. Local fallback mode has no PDF storage."
         }
-        
     try:
         contracts = list(engine.db[config.KG_NODES_COLLECTION].find(
             {"entity_type": "Contract", "session_id": session_id}
         ))
-        
         formatted_contracts = []
         for c in contracts:
             formatted_contracts.append({

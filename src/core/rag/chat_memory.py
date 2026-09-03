@@ -42,8 +42,8 @@ class ChatMemory:
         sid = session_id or str(uuid.uuid4())
         now = datetime.now(timezone.utc)
         self.col.insert_one({
-            "_id": sid,
-            "title": title or "New Session",
+            "_id": sid ,
+            "title": title or "New Session" ,
             "messages": [],
             "activity": [{"title": "Session initialized", "status": "Info", "timestamp": now}],
             "created_at": now,
@@ -95,7 +95,7 @@ class ChatMemory:
     def rename_session(self, session_id: str, new_title: str) -> bool:
         """Rename a session. Returns True if it existed."""
         result = self.col.update_one(
-            {"_id": session_id},
+            {"_id": session_id} ,
             {"$set": {"title": new_title}}
         )
         return result.modified_count > 0

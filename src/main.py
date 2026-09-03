@@ -1,11 +1,12 @@
 from src.core.ingestion.kg_builder import build_infrastructure
 from src.core.rag_pipeline import LegalGraphRAG
 
+
 def main():
     print("==================================================")
     print(" 🏛️  LEGAL AI GRAPH-RAG ORCHESTRATOR  🏛️")
     print("==================================================")
-    
+
     # 1. Build Infrastructure (Vector DB + Knowledge Graph)
     print("\n[STEP 1/2] Building Infrastructure (VectorDB + KG)...")
     for step in build_infrastructure():
@@ -43,7 +44,7 @@ def main():
                     print(f"  - {t}")
             else:
                 print("  (No relevant triplets found)")
-            
+                
             print("\n📄 [PULLED CONTEXT EXCERPTS]")
             if contexts:
                 for i, c in enumerate(contexts, 1):

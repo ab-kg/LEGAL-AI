@@ -6,7 +6,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src'
 
 from pymongo import MongoClient
 import core.common.config as config
-
 print("Connecting to MongoDB...")
 
 client = MongoClient(config.MONGO_URI)
@@ -16,7 +15,6 @@ print("Searching for session starting with '1cad946f'...")
 # Find the exact session ID
 
 session = db[config.CHAT_SESSIONS_COLLECTION].find_one({"_id": {"$regex": "^1cad946f"}})
-
 
 if session:
     session_id = session["_id"]
@@ -41,7 +39,6 @@ if session:
     print("Deletion complete!")
 else:
     print("Could not find a session starting with '1cad946f'. Trying to delete it from chunks directly...")
-    
     # Maybe the session was already deleted from chat_sessions but orphaned chunks remain?
     res2 = db[config.CHUNKS_COLLECTION].delete_many({"metadata.session_id": {"$regex": "^1cad946f"}})
     res3 = db[config.KG_NODES_COLLECTION].delete_many({"session_id": {"$regex": "^1cad946f"}})

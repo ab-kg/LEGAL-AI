@@ -15,7 +15,6 @@ from src.core.common import config
 from src.core.common.utils import safe_str, make_location_id
 from src.core.common import db as db_module
 
-
 # ──────────────────────────────────────────────────────────────────
 #  Shared: Build graph elements from a single contract dict
 # ──────────────────────────────────────────────────────────────────
@@ -128,9 +127,7 @@ def build_graph_elements(contract_id, data, session_id=None):
             "source_chunks": [contract_id],
             "session_id": session_id,
         })
-
     return nodes, edges
-
 
 def upsert_graph_data(db, contract_id, data, session_id):
     """
@@ -141,9 +138,7 @@ def upsert_graph_data(db, contract_id, data, session_id):
     """
     if db is None:
         return
-
     nodes, edges = build_graph_elements(contract_id, data, session_id)
-
     for node in nodes:
         db[config.KG_NODES_COLLECTION].replace_one(
             {"_id": node["_id"]}, node, upsert=True
@@ -154,8 +149,7 @@ def upsert_graph_data(db, contract_id, data, session_id):
             edge,
             upsert=True,
         )
-
-
+        
 # ──────────────────────────────────────────────────────────────────
 #  Batch Pipeline (from contract_data.json)
 # ──────────────────────────────────────────────────────────────────
@@ -235,7 +229,7 @@ def build_infrastructure():
     mongo_uri = mongo_uri.strip() if mongo_uri else ""
 
     if not mongo_uri:
-        print("⚠️ MONGO_URI not set — Knowledge Graph stored locally only.", flush=True)
+        print("⚠️ MONGO_URI not set — Knowledge Graph stored locally only.", flush=True )
         yield {"status": "progress", "message": "⚠️ MONGO_URI not set. Local-only mode."}
     else:
         try:

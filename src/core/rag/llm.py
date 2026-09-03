@@ -13,10 +13,8 @@ from groq import Groq
 
 from src.core.common import config
 
-
 class LLMManager:
     """Dual-provider LLM client with automatic retry and key rotation."""
-
     def __init__(self):
         # ── Gemini ──────────────────────────────────────────────────
         self.gemini_enabled = False
@@ -131,7 +129,7 @@ class LLMManager:
 
         max_attempts = len(self.groq_clients) * 3
         base_delay = 2.0
-
+        
         for attempt in range(max_attempts):
             client = self.groq_clients[self._groq_idx]
             try:
@@ -159,7 +157,7 @@ class LLMManager:
         # Final fallback (no exception suppression)
         return self.groq_clients[self._groq_idx].chat.completions.create(**kwargs)
 
-    # ────────────────────────────────────────────────────────────────
+    # ───────────────────────────/************  
     #  Provider-Agnostic Dispatch
     # ────────────────────────────────────────────────────────────────
 

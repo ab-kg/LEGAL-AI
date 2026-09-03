@@ -17,6 +17,8 @@ certifi
 groq
 google-generativeai
 
+
+
 # Web Backend & Utilities
 fastapi
 python-multipart
@@ -30,4 +32,4 @@ requests
 # PDF Ingestion & Test Generation
 pypdf
 reportlab
-
+

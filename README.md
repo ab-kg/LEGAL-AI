@@ -4,36 +4,6 @@ A **Hybrid GraphRAG (Graph-Augmented Retrieval-QA) API** for deep legal contract
 
 ---
 
-## 🏗️ System Architecture & Data Flow
-
-```mermaid
-graph TD
-    subgraph Offline Indexing
-        A[CUAD Dataset] -->|Load Unique Contracts| B(data_loader.py)
-        B -->|Contract Text| C(index_to_mongodb.py)
-        C -->|Chunk + Embed BAAI/bge-small-en-v1.5| D[(MongoDB Atlas Vector DB — chunks)]
-
-        E[contract_data.json] -->|Structured Fields| F(kg_indexer.py)
-        F -->|Nodes: Contract, Party, Clause, Location| G[(MongoDB Atlas KG — kg_nodes)]
-        F -->|Edges: PARTY_TO, HAS_CLAUSE, HAS_GOVERNING_LAW| H[(MongoDB Atlas KG — kg_edges)]
-    end
-
-    subgraph Runtime Query — rag_pipeline.py
-        U[User Query] -->|1. Encode query| EMB[SentenceTransformer]
-        EMB -->|2. Vector search| D
-        D -->|Top 3 contract chunks| R[Retrieved Passages]
-
-        U -->|3. Keyword match nodes| G
-        G -->|Matched nodes| EDGE_Q[Edge query]
-        R -->|contract_ids| EDGE_Q
-        EDGE_Q -->|4. Fetch edges| H
-        H -->|Up to 20 edges| T[KG Triples]
-
-        R & T -->|5. Context synthesis| CTX[Consolidated Context Block]
-        CTX -->|6. Prompt| LLM(Groq — llama-3.1-8b-instant)
-        LLM -->|7. Grounded answer| OUT[Answer + Contexts + Triples]
-    end
-```
 
 ---
 

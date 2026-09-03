@@ -20,6 +20,7 @@ sample_legal_contract.pdf
 # AI assistant context (local only)
 CONTEXT.md
 
+
 # OS files
 .DS_Store
 Thumbs.db

@@ -17,6 +17,11 @@ from src.core.common.utils import force_ipv4
 force_ipv4()
 
 
+
+
+
+
+
 def has_gemini_key():
     """Return True if a Gemini API key is available."""
     return bool(os.getenv("GEMINI_API_KEY", "").strip())

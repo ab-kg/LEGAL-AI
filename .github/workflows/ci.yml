@@ -4,7 +4,6 @@ on:
   push:
     branches: [feature/chat-memory, main, feat/evidence-logging, feature/pdf-ingestion]
   workflow_dispatch:
-
 jobs:
   build-and-test:
     runs-on: ubuntu-latest

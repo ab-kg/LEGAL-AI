@@ -1,0 +1,26 @@
+Scenario,Difficulty,Initial Query,Follow-up 1,Follow-up 2
+1,Easy,Find a contract governed by California law.,Who are the parties involved?,Does it contain a termination clause?
+2,Easy,Find a contract with a confidentiality clause.,Does confidentiality survive termination?,Which clause supports that answer?
+3,Easy,Find a contract with indemnification provisions.,Who provides indemnification?,Are liability limits also present?
+4,Easy,Find a contract with arbitration provisions.,What governing law applies?,Is dispute resolution also mentioned?
+5,Easy,Find a contract with renewal provisions.,Is automatic renewal allowed?,What termination rights exist?
+6,Easy,Find a contract with payment obligations.,Who is responsible for payment?,Are audit rights included?
+7,Easy,Find a contract containing IP provisions.,Who owns the intellectual property?,Are confidentiality obligations present?
+8,Easy,Find a contract with force majeure provisions.,What events are covered?,Can either party terminate afterward?
+9,Medium,Find a contract with assignment restrictions.,Who may assign rights?,Are consent requirements specified?
+10,Medium,Find a contract governed by New York law.,Who are the parties?,What key clauses are present?
+11,Medium,Find a contract with audit rights.,Who may conduct audits?,Are payment obligations related?
+12,Medium,Find a contract containing insurance provisions.,Who must maintain insurance?,Is indemnification also included?
+13,Medium,Find a contract containing liability limitations.,What liabilities are limited?,Is indemnification affected?
+14,Medium,Find a contract with exclusivity provisions.,Who receives exclusivity rights?,Are non-compete clauses included?
+15,Medium,Find a contract with survival clauses.,Which obligations survive?,Do confidentiality obligations survive?
+16,Medium,Find a contract with termination for cause.,What triggers termination?,What notice period applies?
+17,Medium,Find a contract with termination for convenience.,Who may invoke it?,What conditions apply?
+18,Medium,Find a contract with dispute resolution provisions.,What mechanism is used?,What governing law applies?
+19,Hard,Find a California-governed contract with confidentiality provisions.,Who is bound by confidentiality?,Does it survive termination?
+20,Hard,Find a contract with indemnification and liability limitation clauses.,How do the clauses interact?,Who benefits from each clause?
+21,Hard,Find a contract containing confidentiality and IP clauses.,Who owns the IP?,How is confidential information protected?
+22,Hard,Find a contract containing renewal and termination clauses.,How do renewal rights work?,How can the agreement end?
+23,Hard,Find a contract involving multiple parties.,Who are the parties?,What obligations does each have?
+24,Hard,Find a contract containing payment and audit obligations.,Who pays?,Who may audit compliance?
+25,Hard,Find a contract with several clause categories.,Summarize the key clauses.,Which clause appears most important?

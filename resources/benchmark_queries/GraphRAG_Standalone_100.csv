@@ -1,0 +1,101 @@
+ID,Difficulty,Question
+1,Easy,Which contracts contain termination clauses?
+2,Easy,Which contracts contain confidentiality clauses?
+3,Easy,Which contracts contain indemnification clauses?
+4,Easy,Which contracts contain assignment clauses?
+5,Easy,Which contracts contain arbitration clauses?
+6,Easy,Which contracts contain warranty clauses?
+7,Easy,Which contracts contain liability limitation clauses?
+8,Easy,Which contracts contain force majeure clauses?
+9,Easy,Which contracts contain dispute resolution clauses?
+10,Easy,Which contracts contain renewal provisions?
+11,Easy,Which contracts are governed by California law?
+12,Easy,Which contracts are governed by New York law?
+13,Easy,Which contracts are governed by Delaware law?
+14,Easy,Which contracts mention confidential information?
+15,Easy,Which contracts contain audit rights?
+16,Easy,Which contracts contain payment obligations?
+17,Easy,Which contracts contain insurance requirements?
+18,Easy,Which contracts contain survival clauses?
+19,Easy,Which contracts contain intellectual property clauses?
+20,Easy,Which contracts contain notice requirements?
+21,Easy,Which contracts contain amendment provisions?
+22,Easy,Which contracts contain waiver clauses?
+23,Easy,Which contracts contain severability clauses?
+24,Easy,Which contracts contain merger clauses?
+25,Easy,Which contracts contain exclusivity provisions?
+26,Easy,Which contracts contain non-compete provisions?
+27,Easy,Which contracts mention mediation?
+28,Easy,Which contracts mention breach remedies?
+29,Easy,Which contracts mention injunctive relief?
+30,Easy,Which contracts contain termination for convenience provisions?
+31,Easy,Which contracts contain termination for cause provisions?
+32,Easy,Which contracts reference trade secrets?
+33,Easy,Which contracts contain governing law clauses?
+34,Easy,Which contracts contain subcontracting provisions?
+35,Easy,Which contracts contain data protection provisions?
+36,Easy,Which contracts reference Texas?
+37,Easy,Which contracts reference international jurisdictions?
+38,Easy,Which contracts contain representations and warranties?
+39,Easy,Which contracts contain automatic renewal provisions?
+40,Easy,Which contracts mention damages limitations?
+41,Medium,Which contracts contain both confidentiality and termination clauses?
+42,Medium,Which contracts contain both confidentiality and indemnification clauses?
+43,Medium,Which contracts contain both arbitration and governing law clauses?
+44,Medium,Which contracts contain both renewal and termination provisions?
+45,Medium,Which contracts contain both payment and audit obligations?
+46,Medium,Which contracts contain both insurance and indemnification provisions?
+47,Medium,Which contracts contain both assignment and confidentiality clauses?
+48,Medium,Which contracts contain both warranty and liability limitation clauses?
+49,Medium,Which contracts contain both force majeure and termination clauses?
+50,Medium,Which contracts contain both dispute resolution and arbitration provisions?
+51,Medium,Which contracts governed by California law contain termination clauses?
+52,Medium,Which contracts governed by California law contain confidentiality clauses?
+53,Medium,Which contracts governed by New York law contain indemnification clauses?
+54,Medium,Which contracts governed by Delaware law contain arbitration clauses?
+55,Medium,Which contracts contain confidentiality obligations that survive termination?
+56,Medium,Which contracts contain renewal rights and termination rights?
+57,Medium,Which contracts contain both IP and confidentiality clauses?
+58,Medium,Which contracts contain both audit rights and payment obligations?
+59,Medium,Which contracts contain assignment restrictions and termination rights?
+60,Medium,Which contracts contain force majeure and liability limitations?
+61,Medium,Which parties are associated with California-governed contracts?
+62,Medium,Which parties are associated with New York-governed contracts?
+63,Medium,Which jurisdictions appear most frequently in the dataset?
+64,Medium,Which locations are linked to the most contracts?
+65,Medium,Which clause types appear most frequently?
+66,Medium,Which contracts contain the greatest number of clause categories?
+67,Medium,Which parties appear in multiple contracts?
+68,Medium,"Which contracts contain confidentiality, indemnification, and termination clauses?"
+69,Medium,Which contracts contain arbitration clauses and specific governing laws?
+70,Medium,Which contracts contain both insurance and audit provisions?
+71,Medium,Which contracts contain payment obligations and termination rights?
+72,Medium,Which contracts contain liability limitations and indemnification provisions?
+73,Medium,Which contracts contain notice requirements and termination clauses?
+74,Medium,Which contracts contain governing law and dispute resolution clauses?
+75,Medium,Which contracts contain survival clauses and confidentiality provisions?
+76,Medium,Which contracts contain exclusivity and non-compete provisions?
+77,Medium,Which contracts contain amendment and waiver clauses?
+78,Medium,Which contracts contain severability and merger clauses?
+79,Medium,Which contracts contain confidentiality and data protection obligations?
+80,Medium,Which contracts contain multiple location-related entities?
+81,Hard,Which parties are associated with contracts governed by California law that also contain termination clauses?
+82,Hard,Which clauses are connected to California-governed contracts?
+83,Hard,Which clauses are connected to New York-governed contracts?
+84,Hard,Which contracts connect confidentiality obligations to survival clauses?
+85,Hard,Which parties are linked to indemnification obligations through contract relationships?
+86,Hard,"Which contracts contain overlapping confidentiality, IP, and assignment provisions?"
+87,Hard,Which contracts connect payment obligations and audit rights through the same agreement?
+88,Hard,Which contracts contain the most interconnected entities?
+89,Hard,Which jurisdictions are associated with the widest variety of clause types?
+90,Hard,Which parties are connected to multiple contracts with different governing laws?
+91,Hard,Which contracts contain confidentiality obligations that remain effective after termination?
+92,Hard,Which contracts contain both renewal rights and termination-for-cause provisions?
+93,Hard,Which contracts have the richest combination of clause categories?
+94,Hard,Which contracts connect the same party to multiple obligations?
+95,Hard,Which contracts contain both arbitration and dispute resolution mechanisms?
+96,Hard,Which contracts contain the strongest evidence for termination rights?
+97,Hard,"Which contracts connect parties, locations, and clauses in the same retrieval context?"
+98,Hard,Which contracts contain overlapping liability limitations and indemnification obligations?
+99,Hard,Which contracts contain assignment restrictions together with confidentiality obligations?
+100,Hard,Which governing law appears most often among contracts containing arbitration clauses?

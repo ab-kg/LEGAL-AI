@@ -23,6 +23,10 @@ from src.core.common import db as db_module
 from src.core.rag.llm import LLMManager
 from src.core.rag import retrieval
 from src.core.ingestion import ingestion as ingestion_module
+from src.core.rag.tfidf import (
+    TFIDFRetriever,
+    TFIDFDocument
+)
 
 # Ensure IPv4-only resolution before any network I/O
 force_ipv4()
@@ -46,6 +50,7 @@ class LegalGraphRAG:
         self.mongo_client = None
         self.db = None
         self.G = nx.DiGraph()
+        self.tfidf = TFIDFRetriever()
 
         if config.MONGO_URI:
             try:
@@ -208,6 +213,29 @@ class LegalGraphRAG:
             print(f"⚠️ Query condensation failed: {e}. Using raw query.")
 
         return query
+
+    def build_tfidf_index(self, session_id=None):
+
+        documents = retrieval.load_all_chunks(
+            self.db,
+            session_id
+        )
+
+        tfidf_documents = [
+            TFIDFDocument(
+                text=doc["text"],
+                chunk_id=doc.get("chunk_id"),
+                contract_id=doc.get("contract_id"),
+            )
+            for doc in documents
+        ]
+
+        self.tfidf.fit(tfidf_documents)
+
+        print(
+            f"TF-IDF index built: "
+            f"{len(tfidf_documents)} documents"
+        )
 
 
 if __name__ == "__main__":

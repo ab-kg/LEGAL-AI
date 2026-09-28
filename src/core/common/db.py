@@ -22,11 +22,14 @@ def get_mongo_client(uri=None):
     return MongoClient(uri, tlsCAFile=certifi.where())
 
 
-def get_database(client, name="legal_rag"):
-    """Return the named database from an existing MongoClient."""
+def get_database(client, name=None):
+    """Return the named database from an existing MongoClient.
+
+    Defaults to ``config.MONGO_DB_NAME``, which itself defaults to ``legal_rag``.
+    """
     if client is None:
         return None
-    return client[name]
+    return client[name or config.MONGO_DB_NAME]
 
 def ping(db):
     """

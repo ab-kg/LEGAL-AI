@@ -45,9 +45,7 @@ if not JWT_SECRET:
         + "=" * 70
     )
 
-
 bearer_scheme = HTTPBearer(auto_error=False, description="JWT access token")
-
 
 # ─── Password hashing ───────────────────────────────────────────────
 
@@ -79,7 +77,6 @@ def validate_password(password: str) -> None:
 def normalize_username(username: str) -> str:
     """Usernames are matched case-insensitively and stored lowercased."""
     return username.strip().lower()
-
 
 def validate_username(username: str) -> str:
     """Return a validated, normalized username or raise HTTP 422."""
@@ -168,7 +165,7 @@ def get_current_user(
     if user is None:
         # Token is well-formed but the account is gone (deleted or renamed).
         raise unauthorized
-
+    
     return {
         "id": str(user.get("_id")),
         "username": user["username"],
@@ -184,7 +181,6 @@ def require_admin(user: dict = Depends(get_current_user)) -> dict:
             detail="Administrator privileges required.",
         )
     return user
-
 
 def create_user_record(
     db,

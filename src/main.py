@@ -51,11 +51,10 @@ def main():
                     print(f"\n--- Excerpt {i} ---\n{c.strip()}")
             else:
                 print("  (No relevant context found)")
-                
+
             print("\n🤖 [AI ASSISTANT ANSWER]")
             print(answer)
             print("="*60 + "\n")
-            
         except KeyboardInterrupt:
             print("\nGoodbye!")
             break

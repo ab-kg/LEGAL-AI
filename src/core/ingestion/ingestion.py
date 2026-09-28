@@ -73,19 +73,29 @@ def extract_kg_using_llm(llm_manager, text):
         "}"
     )
 
+    # Bound before the try so the handler can always reference it. If
+    # generate() raises (bad key, rate limit), referencing resp_text inside
+    # `except` would raise UnboundLocalError and mask the real error.
+    resp_text = ""
+
     try:
         full_prompt = f"SYSTEM INSTRUCTIONS:\n{system_prompt}\n\nUSER REQUEST:\n{user_prompt}"
-        resp_text = llm_manager.generate(full_prompt)
+        resp_text = llm_manager.generate(full_prompt) or ""
 
-        # More robust JSON extraction for Groq/Llama
+        # Tolerate markdown fences or prose wrapped around the JSON object.
         start_idx = resp_text.find('{')
         end_idx = resp_text.rfind('}')
-        if start_idx != -1 and end_idx != -1:
-            resp_text = resp_text[start_idx:end_idx+1]
+        if start_idx != -1 and end_idx > start_idx:
+            resp_text = resp_text[start_idx:end_idx + 1]
 
-        return json.loads(resp_text)
+        extracted = json.loads(resp_text)
+        if not isinstance(extracted, dict):
+            print("⚠️ LLM returned a non-object JSON payload; discarding.")
+            return {}
+        return extracted
     except Exception as e:
-        print(f"❌ LLM KG extraction failed: {e}\nResponse was: {resp_text}")
+        print(f"❌ LLM KG extraction failed: {type(e).__name__}: {e}")
+        print(f"   raw response (first 300 chars): {resp_text[:300]!r}")
         return {}
 
 

@@ -52,20 +52,23 @@ def env(monkeypatch):
     client_mongo = mongomock.MongoClient()
     db = client_mongo["legal_rag"]
 
-    app_module.engine = MagicMock()
-    app_module.engine.db = db
+    # Resources now live on app.state rather than module globals, so the
+    # routers resolve them through dependencies.
+    app_module.app.state.engine = MagicMock()
+    app_module.app.state.engine.db = db
     # answer_query must return a real 3-tuple; a bare MagicMock cannot be
     # unpacked, and every chat test would then fail for the wrong reason.
-    app_module.engine.answer_query.return_value = (
+    app_module.app.state.engine.answer_query.return_value = (
         "Mock answer.",
         ["Mock context excerpt."],
         [("Entity", "relation", "Entity")],
     )
-    app_module.engine.ingest_pdf.return_value = {"status": "indexed"}
-    app_module.memory = ChatMemory(db)
-    app_module.memory.ensure_indexes()
+    app_module.app.state.engine.ingest_pdf.return_value = {"status": "indexed"}
 
     app_module.app.state.db = db
+    app_module.app.state.memory = ChatMemory(db)
+    app_module.app.state.memory.ensure_indexes()
+
     return TestClient(app_module.app), db
 
 
@@ -325,6 +328,54 @@ def test_admin_can_list_users(env):
     names = [u["username"] for u in r.json()["users"]]
     assert "root" in names
     assert all("password" not in u for u in r.json()["users"]), "password hash leaked"
+
+
+# ─── Router structure ────────────────────────────────────────────────
+
+def test_documented_route_set_is_stable(env):
+    """A regression guard: catches accidental route renames during refactors.
+
+    Uses the OpenAPI schema rather than app.routes, because newer FastAPI
+    versions nest include_router results instead of flattening them.
+    """
+    client, _ = env
+    documented = sorted(client.app.openapi()["paths"].keys())
+    assert documented == sorted(
+        [
+            "/api/health",
+            "/api/login",
+            "/api/me",
+            "/api/register",
+            "/api/session",
+            "/api/sessions",
+            "/api/activity",
+            "/api/chat",
+            "/api/overview/summary",
+            "/api/session/{session_id}",
+            "/api/session/{session_id}/rename",
+            "/api/session/{session_id}/ingest",
+            "/api/session/{session_id}/chunks",
+            "/api/session/{session_id}/graph",
+            "/api/session/{session_id}/contracts",
+            "/api/admin/users",
+        ]
+    ), f"documented routes changed: {documented}"
+
+
+def test_router_layout(env):
+    """Each concern lives in its own module under src/api/."""
+    from src.api import admin, auth, chat, documents, overview, sessions
+
+    for module, prefix in [
+        (auth, "/api"),
+        (sessions, "/api"),
+        (documents, "/api/session/{session_id}"),
+        (chat, "/api"),
+        (overview, "/api"),
+        (admin, "/api/admin"),
+    ]:
+        assert module.router.prefix == prefix, f"{module.__name__} prefix drift"
+        assert module.router.routes, f"{module.__name__} exposes no routes"
 
 
 # ─── ChatMemory ownership unit tests ──────────────────────────────────

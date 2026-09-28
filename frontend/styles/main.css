@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   SetCONNECT Legal AI — Design System
+   LegalAI — Design System
    ═══════════════════════════════════════════════════════════ */
 
 :root {
@@ -227,8 +227,8 @@ body::after {
     line-height: 1.1;
 }
 
-.logo-text .set { color: #ffffff; }
-.logo-text .connect { color: var(--blue-400); }
+.logo-text .brand-primary { color: #ffffff; }
+.logo-text .brand-accent { color: var(--blue-400); }
 
 .logo-tagline {
     font-size: 10px;

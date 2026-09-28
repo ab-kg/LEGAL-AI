@@ -1,0 +1,520 @@
+/* ═══════════════════════════════════════════════════════════════
+   LegalAI — Direction A: contrast push
+   ----------------------------------------------------------------
+   Additive layer over main.css / chat.css. Richer depth, gradient
+   numerals, grain texture, and a responsive fix for the sub-1100px
+   clipping bug.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Tokens ─── */
+:root {
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --dur-fast: 130ms;
+    --dur-base: 220ms;
+    --dur-slow: 380ms;
+
+    --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 2px 4px rgba(15, 23, 42, 0.03), 0 10px 24px rgba(15, 23, 42, 0.07);
+    --shadow-lg: 0 4px 10px rgba(15, 23, 42, 0.04), 0 20px 44px rgba(15, 23, 42, 0.10);
+    --shadow-xl: 0 8px 18px rgba(15, 23, 42, 0.05), 0 36px 72px rgba(15, 23, 42, 0.14);
+
+    /* A hairline highlight along a surface's top edge — the main depth cue */
+    --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    --edge-highlight-dark: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+    --accent-grad: linear-gradient(135deg, var(--navy-900) 0%, var(--blue-600) 100%);
+    --accent-grad-vivid: linear-gradient(140deg, var(--blue-500) 0%, var(--cyan-400) 100%);
+    --accent-soft: rgba(59, 130, 246, 0.10);
+    --accent-ring: rgba(59, 130, 246, 0.38);
+    --focus-ring: 0 0 0 2px var(--bg-main), 0 0 0 4px var(--accent-ring);
+}
+
+[data-theme="dark"] {
+    --accent-grad: linear-gradient(135deg, #f1f5f9 0%, var(--blue-400) 100%);
+    --accent-grad-vivid: linear-gradient(140deg, var(--blue-400) 0%, var(--cyan-400) 100%);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.28);
+    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.32), 0 12px 28px rgba(0, 0, 0, 0.38);
+    --shadow-lg: 0 6px 14px rgba(0, 0, 0, 0.36), 0 24px 52px rgba(0, 0, 0, 0.46);
+    --shadow-xl: 0 10px 22px rgba(0, 0, 0, 0.4), 0 40px 80px rgba(0, 0, 0, 0.55);
+    --edge-highlight: var(--edge-highlight-dark);
+    --accent-soft: rgba(59, 130, 246, 0.16);
+}
+
+/* ─── Film grain ─── */
+/* The single detail that reads as "designed" rather than "themed". */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 60;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] body::after {
+    opacity: 0.045;
+}
+
+/* ─── Global refinements ─── */
+
+body {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+    letter-spacing: -0.011em;
+    line-height: 1.55;
+}
+
+::selection {
+    background: var(--accent-soft);
+    color: var(--text-primary);
+}
+
+h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
+}
+
+.stat-item h2,
+.data-table td,
+.pill-text {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Scrollbars ─── */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.28);
+    border-radius: var(--radius-full);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    transition: background-color var(--dur-base) var(--ease-out);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.5);
+    background-clip: content-box;
+}
+
+/* ─── Sidebar ─── */
+
+.sidebar {
+    background: linear-gradient(165deg, var(--navy-800) 0%, var(--navy-900) 55%, #05080f 100%);
+    box-shadow: 1px 0 0 rgba(15, 23, 42, 0.04), 18px 0 48px rgba(15, 23, 42, 0.10);
+    position: relative;
+}
+
+.sidebar::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 1px;
+    background: linear-gradient(180deg, transparent 0%, rgba(59, 130, 246, 0.5) 25%, rgba(59, 130, 246, 0.1) 70%, transparent 100%);
+    pointer-events: none;
+}
+
+.logo-icon {
+    background: var(--accent-grad-vivid) !important;
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.45), var(--edge-highlight-dark);
+    transition: transform var(--dur-base) var(--ease-spring), box-shadow var(--dur-base) var(--ease-out);
+}
+
+.logo:hover .logo-icon {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow: 0 10px 26px rgba(59, 130, 246, 0.55), var(--edge-highlight-dark);
+}
+
+.logo-tagline {
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    opacity: 0.6;
+}
+
+.nav-item {
+    position: relative;
+    overflow: hidden;
+    transition: background-color var(--dur-base) var(--ease-out),
+                color var(--dur-base) var(--ease-out),
+                transform var(--dur-fast) var(--ease-out);
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 3px;
+    height: 0;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(180deg, var(--cyan-400), var(--blue-400));
+    transform: translateY(-50%);
+    transition: height var(--dur-base) var(--ease-out);
+}
+
+.nav-item:hover::before,
+.nav-item.active::before {
+    height: 58%;
+}
+
+.nav-item:hover {
+    transform: translateX(3px);
+}
+
+.nav-item:active {
+    transform: translateX(3px) scale(0.985);
+}
+
+.nav-item.active {
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.4), var(--edge-highlight-dark);
+}
+
+/* ─── Cards ─── */
+
+.panel-card,
+.pill-card,
+.graph-panel,
+.chart-section {
+    transition: transform var(--dur-base) var(--ease-out),
+                box-shadow var(--dur-base) var(--ease-out),
+                border-color var(--dur-base) var(--ease-out);
+}
+
+.panel-card,
+.pill-card {
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm), var(--edge-highlight);
+}
+
+.panel-card:hover,
+.pill-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md), var(--edge-highlight);
+    border-color: rgba(59, 130, 246, 0.32);
+}
+
+.pill-icon,
+.stat-icon-small {
+    background: var(--accent-grad-vivid) !important;
+    border: none;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.32), var(--edge-highlight-dark);
+    transition: transform var(--dur-base) var(--ease-spring), box-shadow var(--dur-base) var(--ease-out);
+}
+
+.pill-card:hover .pill-icon,
+.stat-item:hover .stat-icon-small {
+    transform: scale(1.08);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.45), var(--edge-highlight-dark);
+}
+
+/* ─── Stat tiles: gradient numerals + wide-tracked labels ─── */
+
+.stat-item {
+    transition: transform var(--dur-base) var(--ease-out);
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+}
+
+.stat-item h2 {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    background: var(--accent-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-item p {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.stat-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.85;
+}
+
+/* ─── Progress ─── */
+
+.progress-bar-fill {
+    position: relative;
+    overflow: hidden;
+    background: var(--accent-grad-vivid);
+    transition: width var(--dur-slow) var(--ease-out);
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+    animation: barSheen 2.1s var(--ease-out) infinite;
+}
+
+@keyframes barSheen {
+    0%   { transform: translateX(-100%); }
+    60%  { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ─── Buttons ─── */
+
+.btn-primary,
+.btn-atlas,
+.pill-btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--accent-grad-vivid) !important;
+    border: none;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.24), 0 8px 22px rgba(37, 99, 235, 0.2), var(--edge-highlight-dark);
+    transition: transform var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur-base) var(--ease-out),
+                filter var(--dur-base) var(--ease-out);
+}
+
+.btn-primary::after,
+.btn-atlas::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.3) 48%, transparent 76%);
+    transform: translateX(-100%);
+    transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.btn-primary:hover::after,
+.btn-atlas:hover::after {
+    transform: translateX(100%);
+}
+
+.btn-primary:hover,
+.btn-atlas:hover,
+.pill-btn:hover {
+    transform: translateY(-1px);
+    filter: saturate(1.1);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.28), 0 14px 34px rgba(37, 99, 235, 0.28), var(--edge-highlight-dark);
+}
+
+.btn-primary:active,
+.btn-atlas:active,
+.pill-btn:active {
+    transform: translateY(0) scale(0.985);
+}
+
+.btn-primary:disabled,
+.btn-atlas:disabled,
+.pill-btn:disabled {
+    transform: none;
+    filter: grayscale(0.35);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.icon-btn {
+    transition: background-color var(--dur-base) var(--ease-out),
+                color var(--dur-base) var(--ease-out),
+                transform var(--dur-fast) var(--ease-spring);
+}
+
+.icon-btn:hover {
+    transform: translateY(-1px);
+    background: var(--accent-soft);
+}
+
+.icon-btn:active {
+    transform: scale(0.94);
+}
+
+/* ─── Forms ─── */
+
+input, textarea, select, .form-select {
+    transition: border-color var(--dur-base) var(--ease-out),
+                box-shadow var(--dur-base) var(--ease-out);
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--blue-400);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.75;
+}
+
+/* ─── Tables & feed ─── */
+
+.data-table thead th {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.data-table tbody tr {
+    transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.data-table tbody tr:hover {
+    background: var(--accent-soft);
+}
+
+.activity-item {
+    transition: background-color var(--dur-base) var(--ease-out),
+                transform var(--dur-fast) var(--ease-out),
+                border-color var(--dur-base) var(--ease-out);
+}
+
+.activity-item:hover {
+    transform: translateX(3px);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: var(--shadow-xs);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   Responsive fix
+   Below ~1100px the fixed 260px sidebar left only 540px of content
+   while the pill strip kept its desktop width, pushing cards to
+   x=1079 — and body{overflow:hidden} meant that content was clipped
+   with no way to scroll to it.
+   ─────────────────────────────────────────────────────────────── */
+
+/* Safety net: never let a grid child spill out of the content column */
+.main-content {
+    overflow-x: hidden;
+}
+
+/* Let the tab strip scroll rather than overflow once space is tight */
+.top-pills-nav {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.top-pills-nav::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 1100px) {
+    /* Sidebar narrows, reclaiming ~110px for the content column */
+    .sidebar {
+        width: 200px;
+    }
+
+    .dashboard-grid-main {
+        grid-template-columns: 1fr;
+    }
+
+    /* Stat tiles reflow instead of squeezing into one tall column */
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: var(--space-3);
+    }
+
+    /* Pill cards keep a sensible floor and scroll horizontally */
+    .top-pills-nav .pill-card {
+        min-width: 172px;
+        scroll-snap-align: start;
+    }
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 68px;
+    }
+
+    /* Text labels collapse; icons carry the meaning */
+    .sidebar .nav-item span,
+    .sidebar .logo-tagline,
+    .sidebar .menu-label,
+    .sidebar .sidebar-user span {
+        display: none;
+    }
+
+    .sidebar .nav-item {
+        justify-content: center;
+        padding-inline: 0;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .main-content {
+        padding: 18px 16px;
+    }
+}
+
+@media (max-width: 620px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-item h2 {
+        font-size: 34px;
+    }
+}
+
+/* ─── Preferences ─── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .progress-bar-fill::after {
+        animation: none;
+    }
+}
+
+@media (prefers-contrast: more) {
+    :root {
+        --border-color: rgba(15, 23, 42, 0.3);
+        --text-secondary: #334155;
+        --text-muted: #475569;
+    }
+
+    .panel-card, .pill-card {
+        border-width: 2px;
+    }
+}

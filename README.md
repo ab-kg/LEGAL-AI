@@ -297,20 +297,6 @@ Required service variables: `MONGO_URI`, `GROQ_API_KEY`, `JWT_SECRET`,
 
 ---
 
-## Known limitations
-
-- **`/api/register` has no rate limiting** — anyone can create accounts and
-  consume LLM quota.
-- **No token revocation.** Sign-out clears the browser only; a stolen token is
-  valid until it expires.
-- **Sessions predating multi-user support have no `user_id`** and are invisible
-  to every user, by design. Backfill before relying on older data.
-- **Synchronous chat.** A query blocks for 10–60s; there is no streaming.
-- **Wikipedia-class search is absent** — retrieval is over the user's own
-  uploads plus an optional seeded CUAD corpus.
-- The `google.generativeai` package is deprecated upstream; migrate to
-  `google-genai` when the Gemini path is next touched.
-
 ---
 
 ## Technology

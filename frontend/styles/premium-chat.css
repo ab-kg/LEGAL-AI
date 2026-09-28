@@ -1,0 +1,200 @@
+/* ═══════════════════════════════════════════════════════════════
+   LegalAI — Chat polish
+   Refines the conversation surface: message rhythm, bubble depth,
+   and composer affordances.
+   ═══════════════════════════════════════════════════════════════ */
+
+.chat-messages {
+    scroll-behavior: smooth;
+    padding-inline: var(--space-2);
+}
+
+.chat-message-wrapper {
+    animation: messageRise var(--dur-slow) var(--ease-out) both;
+}
+
+@keyframes messageRise {
+    from { opacity: 0; transform: translateY(10px) scale(0.995); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ─── Assistant bubble ─── */
+.chat-message {
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition:
+        box-shadow var(--dur-base) var(--ease-out),
+        border-color var(--dur-base) var(--ease-out);
+}
+
+.chat-message:hover {
+    box-shadow: var(--shadow-md);
+    border-color: rgba(59, 130, 246, 0.24);
+}
+
+.chat-avatar {
+    box-shadow:
+        0 2px 8px rgba(59, 130, 246, 0.28),
+        var(--edge-highlight-dark);
+    flex-shrink: 0;
+    transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.chat-message-wrapper:hover .chat-avatar {
+    transform: scale(1.06);
+}
+
+/* Left accent rail on assistant messages (the variant class is .bot, not .user) */
+.chat-message.bot .message-content {
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-message.bot .message-content::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 2.5px;
+    border-radius: 0 2px 2px 0;
+    background: linear-gradient(180deg, var(--cyan-400), var(--blue-500));
+    opacity: 0.55;
+}
+
+.message-content {
+    line-height: 1.68;
+}
+
+/* Retrieval evidence block reads as quoted material */
+.context-box {
+    background: var(--accent-soft);
+    border-left: 2.5px solid var(--blue-500);
+    border-radius: 3px 10px 10px 10px;
+    box-shadow: none;
+    transition: background-color var(--dur-base) var(--ease-out),
+                border-color var(--dur-base) var(--ease-out);
+}
+
+.context-box:hover {
+    transform: none;
+    box-shadow: var(--shadow-xs);
+    border-left-color: var(--blue-400);
+}
+
+/* Inline citation tag — ties a claim back to a numbered source */
+.message-content .citation,
+.context-box code {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+    border-radius: 6px;
+    color: var(--blue-600);
+    background: var(--accent-soft);
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    vertical-align: 1px;
+}
+
+[data-theme="dark"] .message-content .citation,
+[data-theme="dark"] .context-box code {
+    color: var(--blue-400);
+    background: rgba(59, 130, 246, 0.16);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* ─── Composer ─── */
+.chat-input-wrapper {
+    box-shadow: var(--shadow-md), var(--edge-highlight);
+    border: 1px solid var(--border-color);
+    transition:
+        box-shadow var(--dur-base) var(--ease-out),
+        border-color var(--dur-base) var(--ease-out),
+        transform var(--dur-base) var(--ease-out);
+}
+
+.chat-input-wrapper:focus-within {
+    border-color: rgba(59, 130, 246, 0.45);
+    box-shadow:
+        0 0 0 3px var(--accent-soft),
+        var(--shadow-lg),
+        var(--edge-highlight);
+    transform: translateY(-1px);
+}
+
+.chat-input-wrapper textarea {
+    background: transparent;
+    border: none;
+    resize: none;
+}
+
+.chat-input-wrapper textarea:focus {
+    box-shadow: none;
+    border: none;
+}
+
+.icon-btn-upload {
+    box-shadow: var(--shadow-xs);
+    transition:
+        transform var(--dur-fast) var(--ease-spring),
+        background-color var(--dur-base) var(--ease-out),
+        color var(--dur-base) var(--ease-out);
+}
+
+.icon-btn-upload:hover {
+    transform: translateY(-2px) rotate(-3deg);
+    background: var(--accent-soft);
+}
+
+/* ─── Suggestion chips ─── */
+.suggestion-chip {
+    box-shadow: var(--shadow-xs);
+    border: 1px solid var(--border-color);
+    transition:
+        transform var(--dur-fast) var(--ease-out),
+        box-shadow var(--dur-base) var(--ease-out),
+        border-color var(--dur-base) var(--ease-out),
+        background-color var(--dur-base) var(--ease-out);
+}
+
+.suggestion-chip:hover {
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: var(--shadow-md);
+    background: var(--accent-soft);
+}
+
+.suggestion-chip:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ─── Typing indicator ─── */
+.chat-loader-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.chat-loader-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--blue-400);
+    animation: dotBounce 1.25s var(--ease-in-out) infinite;
+}
+
+.chat-loader-dots span:nth-child(2) { animation-delay: 0.14s; }
+.chat-loader-dots span:nth-child(3) { animation-delay: 0.28s; }
+
+@keyframes dotBounce {
+    0%, 60%, 100% { transform: translateY(0);    opacity: 0.45; }
+    30%           { transform: translateY(-5px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-message-wrapper,
+    .chat-loader-dots span {
+        animation: none;
+    }
+}

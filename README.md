@@ -1,187 +1,320 @@
-# 🏛️ Legal AI GraphRAG Pipeline
+# LegalAI — Hybrid GraphRAG Contract Intelligence
 
-A **Hybrid GraphRAG (Graph-Augmented Retrieval-QA) API** for deep legal contract understanding. It combines **Dense Semantic Retrieval** (MongoDB Atlas Vector Search) with a **Structured Knowledge Graph** (MongoDB Atlas collections) to provide grounded, hallucination-resistant answers via a **Groq LLM**. Deployed as a backend-only FastAPI service on **Railway**.
+A full-stack web application for analysing legal contracts. **Upload a PDF, then
+ask questions about it** and get answers grounded in the actual document text and
+an auto-extracted Knowledge Graph.
+
+Two retrieval strategies run on every query — dense vector search over embedded
+chunks and structured knowledge-graph traversal — and the results are fused into
+a single grounded prompt so the model answers from evidence instead of guessing.
+
+> **Stack:** React (vanilla JS) · FastAPI · LangChain-free RAG pipeline · MongoDB
+> Atlas (vector search + graph collections) · Groq · PyTorch / Sentence Transformers
 
 ---
 
+## What it does
+
+| Capability | Detail |
+| :--- | :--- |
+| **PDF ingestion** | Parse → chunk (500 words, 100 overlap) → embed → vector store → LLM knowledge-graph extraction |
+| **Hybrid retrieval** | Atlas `$vectorSearch` + KG triple expansion, merged into one context window |
+| **Conversational QA** | Follow-up questions are rewritten into standalone search queries before retrieval |
+| **Multi-user** | Self-registration, JWT sessions, and strict per-user data isolation |
+| **Graph visualisation** | Extracted entities and relationships rendered per session |
+| **Dashboard** | Per-user contract counts, session distribution, and activity feed |
+
+A worked example — ingesting `sample_software_license_agreement.pdf` and asking
+*"What is the governing law?"* produces 11 graph nodes / 10 edges and:
+
+```
+The governing law of the agreement is the laws of the United Kingdom,
+specifically London.
+```
+
+Extracted relationships:
+
+```
+(Contract) --HAS_GOVERNING_LAW--> Location_United Kingdom_London
+Vertex Analytics Ltd. (Party) --PARTY_TO--> (Contract)
+Pacific Retail Systems Pty Ltd (Party) --PARTY_TO--> (Contract)
+(Contract) --HAS_CLAUSE--> Clause_..._Term (Clause)
+```
+
+When the evidence genuinely does not contain an answer, the model says so rather
+than inventing one — the system prompt is explicitly *"answer using ONLY the
+provided context... do not hallucinate."*
 
 ---
 
-## 📂 Directory Structure
+## Architecture
 
 ```text
-legal-ai-kg/
-├── src/
-│   └── core/                              # Core pipeline & logic engine
-│       ├── __init__.py                    # Package init — exposes LegalGraphRAG, build_infrastructure
-│       ├── config.py                      # Models, API keys, collection names
-│       ├── utils.py                       # Shared helpers (IPv4 patch, safe_str, chunking)
-│       ├── db.py                          # MongoDB connection factory
-│       ├── llm.py                         # Dual-provider LLM manager (Gemini/Groq)
-│       ├── retrieval.py                   # Vector search + KG matching
-│       ├── ingestion.py                   # PDF ingestion pipeline
-│       ├── kg_builder.py                  # Builds KG from contract_data.json
-│       ├── data_loader.py                 # CUAD dataset ingestion
-│       └── rag_pipeline.py                # Orchestrator: delegates to db, llm, retrieval, ingestion
-├── scripts/
-│   └── index_to_mongodb.py               # Bulk VDB indexer: chunks CUAD contracts → MongoDB Atlas
-├── tests/
-│   ├── conftest.py                        # Shared test fixtures
-│   ├── test_rag_pipeline.py               # 3-question end-to-end RAG test (used in CI)
-│   ├── test_chat_memory.py                # Persistent Chat Memory E2E test (used in CI)
-│   ├── test_standalone_100.py             # 100 standalone queries evaluation benchmark (used in CI)
-│   ├── test_followups_25.py               # 25 multi-turn scenarios evaluation benchmark (used in CI)
-│   └── test_api_integration.py            # FastAPI server integration test
-├── data/
-│   └── CUADv1.json                        # CUAD dataset (40MB, local copy)
-├── research/
-│   └── import-graph/
-│       └── contract_data.json             # 510 structured contract records for KG construction
-├── reports/                               # Generated test/benchmark reports
-├── .github/
-│   └── workflows/
-│       └── ci.yml                         # GitHub Actions CI — manual trigger only (workflow_dispatch)
-├── app.py                                 # FastAPI backend: lifespan boot, /api/health, /api/session, /api/chat
-├── main.py                                # CLI entrypoint (build + interactive query loop)
-├── Procfile                               # Process definition for Railway
-├── railway.toml                           # Railway deployment config (Nixpacks, health check, restart policy)
-├── .railwayignore                         # Files excluded from Railway builds
-├── requirements.txt                       # Production dependencies (lean, for Railway)
-├── requirements-dev.txt                   # Development dependencies (includes pandas, tqdm for benchmarks)
-├── .gitignore
-├── CONTEXT.md                             # Living context document for AI assistants
-└── README.md                              # This file
+┌──────────────────────────────────────────────────────────────┐
+│  Browser — frontend/                                         │
+│  login.html · index.html · js/{login,app}.js · styles/       │
+│  apiFetch() attaches the bearer token, 401 → re-login        │
+└───────────────────────────┬──────────────────────────────────┘
+                            │  same origin (FastAPI serves the SPA)
+┌───────────────────────────▼──────────────────────────────────┐
+│  src/app.py — composition root                               │
+│  lifespan · CORS · no-cache · /api/health · static mount     │
+└───────────────────────────┬──────────────────────────────────┘
+                            │
+┌───────────────────────────▼──────────────────────────────────┐
+│  src/api/ — routers (domain-grouped)                         │
+│  deps · auth · sessions · documents · chat · overview · admin│
+│  every route declares Depends(get_current_user)              │
+└───────────────────────────┬──────────────────────────────────┘
+                            │
+┌───────────────────────────▼──────────────────────────────────┐
+│  src/core/rag_pipeline.py — LegalGraphRAG                    │
+│  condense query → vector search → KG match → synthesise → LLM│
+└───────┬───────────────────────────────────┬──────────────────┘
+        │                                   │
+┌───────▼──────────────┐          ┌─────────▼──────────────────┐
+│ MongoDB Atlas        │          │ Groq / Gemini               │
+│ · chunks  (+ vectors)│          │ openai/gpt-oss-20b         │
+│ · kg_nodes / kg_edges│          │ gemini-2.5-flash           │
+│ · chat_sessions      │          └────────────────────────────┘
+│ · users              │
+└──────────────────────┘
 ```
 
 ---
 
-## 📋 Core Module Reference
+## Directory structure
 
-| Module | Description | Key Exports |
-| :--- | :--- | :--- |
-| **`src/core/config.py`** | API keys (via env), model names, file paths, collection names. | `EMBEDDING_MODEL`, `GEMINI_MODEL`, `GROQ_MODEL`, `MONGO_URI` |
-| **`src/core/utils.py`** | Shared utilities for the project. | `force_ipv4`, `safe_str`, `make_location_id`, `chunk_text` |
-| **`src/core/db.py`** | MongoDB connection management. | `get_mongo_client`, `get_database`, `ping` |
-| **`src/core/llm.py`** | Dual-provider LLM manager (Gemini/Groq). | `LLMManager` |
-| **`src/core/retrieval.py`** | Vector search and Knowledge Graph matching. | `vector_search`, `graph_match_mongo`, `synthesize_context` |
-| **`src/core/ingestion.py`** | PDF ingestion and dynamic KG extraction pipeline. | `ingest_pdf`, `extract_kg_using_gemini` |
-| **`src/core/kg_builder.py`** | Builds NetworkX graph, uploads nodes/edges to MongoDB Atlas. | `build_infrastructure`, `build_graph_elements`, `upsert_graph_data` |
-| **`src/core/rag_pipeline.py`** | Orchestrator for RAG pipeline. | `LegalGraphRAG` |
-| **`app.py`** | FastAPI backend with lifespan auto-boot, session management, and chat endpoint. | `health_check`, `chat`, `create_session` |
-| **`main.py`** | CLI orchestrator: builds infrastructure, starts interactive query loop. | `main` |
+```text
+LEGAL-AI/
+├── src/
+│   ├── app.py                       # composition root: lifespan, middleware, routers
+│   ├── main.py                      # CLI entrypoint (interactive query loop)
+│   ├── api/
+│   │   ├── deps.py                  # get_db / get_engine / get_memory / ownership
+│   │   ├── auth.py                  # register · login · me
+│   │   ├── sessions.py              # session CRUD + cascading delete
+│   │   ├── documents.py             # ingest · chunks · graph · contracts
+│   │   ├── chat.py                  # the conversational turn
+│   │   ├── overview.py              # activity feed + dashboard metrics
+│   │   └── admin.py                 # admin-only user listing
+│   └── core/
+│       ├── common/
+│       │   ├── config.py            # env vars, collection names, model ids
+│       │   ├── db.py                # Mongo client factory
+│       │   ├── security.py          # bcrypt hashing, JWT, get_current_user
+│       │   └── utils.py             # IPv4 patch, chunking, id sanitisation
+│       ├── rag/
+│       │   ├── chat_memory.py       # session store, user_id scoping
+│       │   ├── llm.py               # LLMManager (Groq / Gemini)
+│       │   ├── retrieval.py         # vector search + KG matching
+│       │   └── tfidf.py             # lexical retriever
+│       ├── ingestion/
+│       │   ├── ingestion.py         # PDF → chunks → embeddings → KG
+│       │   ├── kg_builder.py        # upsert nodes/edges
+│       │   └── pdf_parser.py
+│       └── rag_pipeline.py          # LegalGraphRAG orchestrator
+├── frontend/                        # vanilla JS SPA served by FastAPI
+├── tests/
+│   ├── security/test_auth_isolation.py
+│   ├── e2e/ · benchmarks/
+├── tools/
+│   ├── smoke_live.py                # auth flow against a running server
+│   └── smoke_rag.py                 # full RAG: upload a PDF, ask a question
+├── Dockerfile                       # multi-stage build
+├── requirements.txt
+└── README.md
+```
 
 ---
 
-## 📦 Setup & Installation
+## API
 
-### Environment Variables
+| Method | Path | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/register` | — | Create an account, returns a token |
+| `POST` | `/api/login` | — | Sign in, returns a JWT |
+| `GET` | `/api/me` | ✔ | Current caller's identity |
+| `POST` | `/api/session` | ✔ | Create a session (owned by the caller) |
+| `GET` | `/api/sessions` | ✔ | List the caller's sessions |
+| `GET` | `/api/session/{id}` | ✔ | Message history |
+| `PUT` | `/api/session/{id}/rename` | ✔ | Rename |
+| `DELETE` | `/api/session/{id}` | ✔ | Delete session + all indexed data |
+| `POST` | `/api/session/{id}/ingest` | ✔ | **Upload a contract PDF** |
+| `GET` | `/api/session/{id}/chunks` | ✔ | Indexed chunks |
+| `GET` | `/api/session/{id}/graph` | ✔ | Knowledge Graph nodes + edges |
+| `GET` | `/api/session/{id}/contracts` | ✔ | Structured contract metadata |
+| `POST` | `/api/chat` | ✔ | **Ask a question** (RAG) |
+| `GET` | `/api/overview/summary` | ✔ | Per-user metrics |
+| `GET` | `/api/activity` | ✔ | Per-user activity feed |
+| `GET` | `/api/admin/users` | admin | All accounts (passwords excluded) |
+| `GET` | `/api/health` | — | Liveness probe |
 
-Create a `.env` file in the project root with:
+Only `register`, `login`, and `health` are public.
+
+---
+
+## Setup
+
+### 1. Environment
+
+Create `.env` in the project root:
+
 ```env
 MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/?retryWrites=true&w=majority
-# Can be a single key or a comma-separated list of keys for API key rotation
-GROQ_API_KEY=gsk_key1,gsk_key2
+GROQ_API_KEY=gsk_...
+JWT_SECRET=<32+ random bytes, hex encoded>
+GROQ_MODEL=openai/gpt-oss-20b
+LLM_PROVIDER=groq
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<strong password>
 ```
 
-### Dependencies
+| Variable | Required | Default | Notes |
+| :--- | :--- | :--- | :--- |
+| `MONGO_URI` | ✔ | — | MongoDB Atlas connection string |
+| `GROQ_API_KEY` | ✔ | — | Comma-separated list enables key rotation |
+| `JWT_SECRET` | ✔ | random per-process | **Always set it.** Without it, tokens die on every restart |
+| `GROQ_MODEL` | | `openai/gpt-oss-20b` | Must exist on your key — list with `GET /v1/models` |
+| `GEMINI_API_KEY` | | — | Optional KG-extraction fallback |
+| `LLM_PROVIDER` | | `groq` | `groq` or `gemini` |
+| `MONGO_DB_NAME` | | `legal_rag` | Override to keep dev data separate |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | | — | Seeds the admin on first boot |
+| `ACCESS_TOKEN_HOURS` | | `24` | Token lifetime |
+| `CORS_ORIGINS` | | localhost | Unnecessary — the SPA is same-origin |
+| `LEGAL_AI_SKIP_RAG` | | unset | `1` runs UI/auth only, no torch needed |
 
-To support both lightweight cloud deployments and local development, dependencies are split:
-
-* **Production Deployment** (minimal footprint, for Railway / cloud containers):
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-* **Local Development & Benchmarking** (adds `pandas`, `tqdm`, etc.):
-  ```bash
-  pip install -r requirements-dev.txt
-  ```
-
----
-
-## 🛠️ Execution Guide
-
-### 1. API Server (Production — Railway or Local)
+### 2. Install and run
 
 ```bash
-python src/app.py
+pip install -r requirements.txt
+python -X utf8 -m uvicorn src.app:app --reload --port 8000
 ```
 
-* The RAG engine boots automatically on startup (downloads embedding model, connects to MongoDB Atlas).
-* **Full API reference:** [`docs/api_documentation.md`](docs/api_documentation.md)
-* **Task backlog:** [`docs/TASKS.md`](docs/TASKS.md)
-* **Interactive Docs**: Visit `http://localhost:8000/docs` for Swagger UI.
-* **Frontend UI** (this branch): Visit `http://localhost:8000/` after starting the server.
+Open <http://localhost:8000>, register an account, upload a PDF, and ask a question.
 
-**Endpoints (summary):**
+> **Windows:** use `python -X utf8` (or set `PYTHONIOENCODING=utf-8`). The console
+> defaults to cp1252, which cannot encode the startup log's emoji and raises
+> `UnicodeEncodeError`. Do **not** put `PYTHONIOENCODING` in `.env`; it is read at
+> interpreter startup, before `.env` is loaded.
 
-| Method | Path | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/health` | Health check |
-| `POST` | `/api/session` | Create session ID (lazy DB write) |
-| `GET` | `/api/sessions` | List recent sessions |
-| `DELETE` | `/api/session/{session_id}` | Delete session |
-| `PUT` | `/api/session/{session_id}/rename` | Rename session |
-| `GET` | `/api/session/{session_id}` | Messages + activity log |
-| `POST` | `/api/session/{session_id}/ingest` | Upload PDF |
-| `GET` | `/api/session/{session_id}/chunks` | View chunks |
-| `GET` | `/api/session/{session_id}/graph` | View knowledge graph |
-| `GET` | `/api/session/{session_id}/contracts` | Contract summaries |
-| `GET` | `/api/overview/summary` | Global metrics |
-| `POST` | `/api/chat` | RAG chat query |
-
-### 2. Command Line Interface (CLI)
+### 3. Fast iteration without the ML stack
 
 ```bash
-python src/main.py
+pip install fastapi "uvicorn[standard]" python-multipart python-dotenv pydantic \
+            bcrypt PyJWT "pymongo[srv]" certifi mongomock
+
+set LEGAL_AI_SKIP_RAG=1     # PowerShell
+uvicorn src.app:app --reload --port 8000
 ```
 
-* Runs KG indexing, then starts an interactive query prompt loop.
+Auth, sessions, and the whole UI work; chat and ingest return clearly-marked
+placeholders instead of real answers. No torch, no sentence-transformers.
 
-### 3. One-Time Indexing Scripts
+---
 
-These only need to be run once to populate MongoDB Atlas:
+## Authentication & isolation
+
+- Passwords hashed with **bcrypt**; the 72-byte truncation limit is rejected
+  rather than silently ignored.
+- **JWT** (HS256) carries `sub`, `role`, `iat`, `exp`.
+- Sign-in failures return an identical message for unknown-user and
+  wrong-password, so the endpoint cannot be used to enumerate accounts.
+- Sessions are persisted **with their owner at creation time**. Ownership is
+  then strict, so a client-supplied `session_id` can never be adopted by whoever
+  sends it first.
+- Cross-user access returns **404, not 403** — a 403 would confirm the session
+  exists and turn the endpoint into an ID oracle.
+- Activity feeds and dashboard metrics are filtered to the caller.
+- Deleting a session cascades to its chunks, KG nodes, and KG edges.
+
+---
+
+## Design notes
+
+**Hybrid retrieval, not just vectors.** Pure vector search misses relational
+questions ("who are the parties and where are they located?"). The KG expansion
+surfaces entity relationships that don't share vocabulary with the query, and
+both are fused before generation.
+
+**Session-scoped retrieval bypasses the Atlas vector index.** When a session is
+active, chunks are fetched and scored in-process with a dot product rather than
+going through `$vectorSearch`. Atlas indexes are eventually consistent, so a
+just-uploaded PDF would be invisible to its own session for a few seconds. The
+global `$vectorSearch` path still serves the seed corpus (chunks with no
+`session_id`).
+
+**Query condensation.** "What about termination?" retrieves nothing useful on
+its own, so follow-ups are rewritten into standalone queries with the contract
+name injected before embedding — visible in the logs as
+`🔄 Condensed Query: ... ➔ ...`.
+
+**Token budgeting.** VDB chunks are truncated to 800 chars, KG edges capped at 20,
+node IDs at 50 — this keeps prompts inside the Groq context window.
+
+**Graceful degradation.** If Atlas is unreachable the engine falls back to a
+local NetworkX graph so the API still answers.
+
+---
+
+## Testing
 
 ```bash
-# Index CUAD contracts into the Vector DB (chunks collection)
-python src/scripts/index_to_mongodb.py
+# 55 auth / isolation tests, no external services needed
+pytest tests/security/test_auth_isolation.py
 
-# Index structured KG data into kg_nodes / kg_edges collections
-python -m src.core.kg_builder
+# End-to-end against a running server
+python -X utf8 tools/smoke_live.py    # signup → signin → sessions → isolation
+python -X utf8 tools/smoke_rag.py     # upload a real PDF → ask a real question
 ```
 
----
+The isolation suite covers anonymous access to all 14 protected routes, tampered
+tokens, cross-user read/delete/hijack attempts, per-user scoping of the activity
+and dashboard feeds, and admin RBAC.
 
-## 🔄 CI/CD
-
-GitHub Actions workflow (`.github/workflows/ci.yml`) triggers on pushes to the `feature/chat-memory`, `main`, and `feat/evidence-logging` branches, as well as manually via `workflow_dispatch`.
-
-The pipeline executes the following checks:
-1. **RAG Pipeline Test** (`tests/e2e/test_rag_pipeline.py`) — runs 3 baseline query evaluations.
-2. **Chat Memory E2E Test** (`tests/e2e/test_chat_memory.py`) — runs multi-session isolation and history truncation tests.
-3. **Standalone 100 Benchmark** (`tests/benchmarks/test_standalone_100.py`) — runs 100 standalone queries with API key rotation, incremental report saving, and a graceful 40-minute timeout.
-4. **Followups 25 Benchmark** (`tests/benchmarks/test_followups_25.py`) — runs 25 multi-turn scenarios under the same key rotation and timeout guards.
-
-Reports for all test suites are uploaded as GitHub Action run artifacts.
+CI (`.github/workflows/ci.yml`) additionally runs the RAG pipeline, chat-memory,
+and benchmark suites, which require live Atlas credentials.
 
 ---
 
-## 💎 Design Highlights
+## Deployment (Railway)
 
-1. **Hybrid Retrieval**: Combines dense vector search (semantic similarity) with structured KG triples (entity relationships) for comprehensive context.
-2. **Token-Efficient Context**: VDB chunks capped at 800 chars, KG edges limited to 20, node IDs truncated to 50 chars — prevents Groq token limit errors.
-3. **Read-Only Production**: The deployed API and CI pipeline never write to MongoDB Atlas — all indexing is done offline via scripts.
-4. **Graceful Fallback**: If MongoDB Atlas is unreachable, the engine falls back to a local `legal_kg.json` NetworkX graph.
+Single container: the Dockerfile builds the frontend with Node and serves it
+from FastAPI, so the browser talks to one origin.
+
+```bash
+docker build -t legalai .
+```
+
+The app listens on **8080** (`${PORT:-8080}`). Point the Railway service's
+public domain target port at `8080` — a mismatch returns 502.
+
+Required service variables: `MONGO_URI`, `GROQ_API_KEY`, `JWT_SECRET`,
+`ADMIN_USERNAME`, `ADMIN_PASSWORD`.
+
+> Railway **stages** variable changes. They do not apply until you deploy the
+> staged change.
 
 ---
 
-## 🛠️ Technology Stack
+## Known limitations
 
-* **MongoDB Atlas Vector Search** — Cloud-hosted vector database for semantic similarity search.
-* **Groq (Llama 3.1 8B Instant)** — High-speed LLM for answer generation.
-* **BAAI/bge-small-en-v1.5** — Sentence embedding model (384-dimensional vectors).
-* **NetworkX** — In-memory graph library used during KG construction.
-* **FastAPI** — Python web framework powering the REST API.
-* **Sentence Transformers** — PyTorch-based dense vector embedding framework.
-* **Railway** — Cloud platform for deployment.
-* **GitHub Actions** — CI pipeline for automated testing.
+- **`/api/register` has no rate limiting** — anyone can create accounts and
+  consume LLM quota.
+- **No token revocation.** Sign-out clears the browser only; a stolen token is
+  valid until it expires.
+- **Sessions predating multi-user support have no `user_id`** and are invisible
+  to every user, by design. Backfill before relying on older data.
+- **Synchronous chat.** A query blocks for 10–60s; there is no streaming.
+- **Wikipedia-class search is absent** — retrieval is over the user's own
+  uploads plus an optional seeded CUAD corpus.
+- The `google.generativeai` package is deprecated upstream; migrate to
+  `google-genai` when the Gemini path is next touched.
+
+---
+
+## Technology
+
+MongoDB Atlas Vector Search · Groq (`openai/gpt-oss-20b`) · Gemini
+(`gemini-2.5-flash`) · `BAAI/bge-small-en-v1.5` (384-dim embeddings) · NetworkX ·
+FastAPI · PyTorch · Sentence Transformers · Railway · GitHub Actions

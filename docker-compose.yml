@@ -1,0 +1,19 @@
+services:
+  legal-ai:
+    build: .
+    container_name: legal-ai
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7
+    container_name: legal-ai-mongo
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

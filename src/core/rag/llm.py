@@ -118,7 +118,7 @@ class LLMManager:
         """
         Call Groq ``chat.completions.create`` with automatic key rotation
         on 429 RateLimitErrors and exponential back-off.
-
+        
         Accepts the same keyword arguments as the Groq SDK.
         """
         if not self.groq_clients:

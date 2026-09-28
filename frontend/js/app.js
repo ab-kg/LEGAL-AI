@@ -2,6 +2,27 @@ const API_BASE_URL = `${window.location.origin}/api`;
 let sessionId = null;
 let trendChart = null;
 
+// Every API call goes through here so the bearer token is attached
+// consistently and an expired session redirects to login in one place.
+async function apiFetch(url, options = {}) {
+    const headers = Object.assign({}, options.headers || {});
+    const token = sessionStorage.getItem('sc_token');
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(url, Object.assign({}, options, { headers }));
+
+    if (res.status === 401) {
+        sessionStorage.removeItem('sc_token');
+        sessionStorage.removeItem('sc_user');
+        if (!window.location.pathname.endsWith('login.html')) {
+            window.location.href = '/login.html?expired=1';
+        }
+    }
+    return res;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Authentication Check
     const token = sessionStorage.getItem('sc_token');
@@ -45,7 +66,7 @@ function initMobileNav() {
 /* ─── Global Activity ─── */
 async function fetchGlobalActivity() {
     try {
-        const res = await fetch(`${API_BASE_URL}/activity/global`);
+        const res = await apiFetch(`${API_BASE_URL}/activity/global`);
         if (res.ok) {
             const data = await res.json();
             renderActivityFeed(data.activity || []);
@@ -148,7 +169,7 @@ function initChat() {
         appendMessage('user', 'Show contract summary for this session.');
         const loaderId = appendLoader();
         try {
-            const res = await fetch(`${API_BASE_URL}/session/${sessionId}/contracts`);
+            const res = await apiFetch(`${API_BASE_URL}/session/${sessionId}/contracts`);
             document.getElementById(loaderId)?.remove();
             if (res.ok) {
                 const data = await res.json();
@@ -197,7 +218,7 @@ function initChat() {
         appendMessage('user', 'Show vector chunks for this session.');
         const loaderId = appendLoader();
         try {
-            const res = await fetch(`${API_BASE_URL}/session/${sessionId}/chunks`);
+            const res = await apiFetch(`${API_BASE_URL}/session/${sessionId}/chunks`);
             document.getElementById(loaderId)?.remove();
             if (res.ok) {
                 const data = await res.json();
@@ -268,7 +289,7 @@ async function checkHealth() {
     const dot = document.getElementById('api-status-dot');
     const text = document.getElementById('api-status-text');
     try {
-        const res = await fetch(`${API_BASE_URL}/health`);
+        const res = await apiFetch(`${API_BASE_URL}/health`);
         if (res.ok) {
             dot.style.backgroundColor = '#10b981';
             text.textContent = 'API Online';
@@ -281,7 +302,7 @@ async function checkHealth() {
 
 async function createNewSession() {
     try {
-        const res = await fetch(`${API_BASE_URL}/session`, { method: 'POST' });
+        const res = await apiFetch(`${API_BASE_URL}/session`, { method: 'POST' });
         if (res.ok) {
             const data = await res.json();
             sessionId = data.session_id;
@@ -312,7 +333,7 @@ async function createNewSession() {
 
 async function fetchSessions() {
     try {
-        const res = await fetch(`${API_BASE_URL}/sessions`);
+        const res = await apiFetch(`${API_BASE_URL}/sessions`);
         if (res.ok) {
             const data = await res.json();
             const list = document.getElementById('session-list');
@@ -358,7 +379,7 @@ async function deleteSession(id, event) {
     if (!confirm('Are you sure you want to permanently delete this session and its data?')) return;
     
     try {
-        const res = await fetch(`${API_BASE_URL}/session/${id}`, { method: 'DELETE' });
+        const res = await apiFetch(`${API_BASE_URL}/session/${id}`, { method: 'DELETE' });
         if (res.ok) {
             if (sessionId === id) {
                 await createNewSession();
@@ -381,7 +402,7 @@ async function renameSession(id, currentTitle, event) {
     if (!newTitle || newTitle.trim() === '' || newTitle === currentTitle) return;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/session/${id}/rename`, {
+        const res = await apiFetch(`${API_BASE_URL}/session/${id}/rename`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: newTitle.trim() })
@@ -405,7 +426,7 @@ async function loadSession(id, switchTab = true) {
     document.getElementById('chat-messages').innerHTML = '<div class="text-center text-muted mt-4"><div class="chat-loader-dots"><span></span><span></span><span></span></div> Loading history...</div>';
     
     try {
-        const res = await fetch(`${API_BASE_URL}/session/${id}`);
+        const res = await apiFetch(`${API_BASE_URL}/session/${id}`);
         if (res.ok) {
             const data = await res.json();
             document.getElementById('chat-messages').innerHTML = '';
@@ -437,7 +458,7 @@ async function loadSession(id, switchTab = true) {
 
 async function fetchOverviewStats() {
     try {
-        const res = await fetch(`${API_BASE_URL}/overview/summary`);
+        const res = await apiFetch(`${API_BASE_URL}/overview/summary`);
         if (res.ok) {
             const data = await res.json();
             animateStat('stat-contracts', data.total_contracts || 0);
@@ -531,7 +552,7 @@ async function sendMessage() {
     chatAbortController = new AbortController();
 
     try {
-        const res = await fetch(`${API_BASE_URL}/chat`, {
+        const res = await apiFetch(`${API_BASE_URL}/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId, query }),
@@ -660,7 +681,7 @@ async function handleFileUpload(file) {
         progress.style.width = '55%';
         message.textContent = 'Generating embeddings & knowledge graph...';
 
-        const res = await fetch(`${API_BASE_URL}/session/${sessionId}/ingest`, {
+        const res = await apiFetch(`${API_BASE_URL}/session/${sessionId}/ingest`, {
             method: 'POST',
             body: formData
         });
@@ -700,7 +721,7 @@ async function handleChatFileUpload(file) {
     formData.append('file', file);
 
     try {
-        const res = await fetch(`${API_BASE_URL}/session/${sessionId}/ingest`, {
+        const res = await apiFetch(`${API_BASE_URL}/session/${sessionId}/ingest`, {
             method: 'POST',
             body: formData
         });
@@ -737,7 +758,7 @@ window.loadContracts = async function() {
     listBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted" style="padding:24px">Loading sessions...</td></tr>';
 
     try {
-        const res = await fetch(`${API_BASE_URL}/overview/summary`);
+        const res = await apiFetch(`${API_BASE_URL}/overview/summary`);
         if (res.ok) {
             const data = await res.json();
             const sessions = data.session_distribution || [];
@@ -790,7 +811,7 @@ window.viewSessionContracts = async function(id, title) {
     container.innerHTML = '<div class="text-center text-muted" style="padding:24px"><div class="chat-loader-dots"><span></span><span></span><span></span></div> Loading contracts...</div>';
 
     try {
-        const res = await fetch(`${API_BASE_URL}/session/${id}/contracts`);
+        const res = await apiFetch(`${API_BASE_URL}/session/${id}/contracts`);
         if (res.ok) {
             const data = await res.json();
             if (!data.contracts?.length) {
@@ -849,7 +870,7 @@ window.loadGraph = async function() {
     listBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted" style="padding:24px">Loading sessions...</td></tr>';
 
     try {
-        const res = await fetch(`${API_BASE_URL}/overview/summary`);
+        const res = await apiFetch(`${API_BASE_URL}/overview/summary`);
         if (res.ok) {
             const data = await res.json();
             const sessions = data.session_distribution || [];
@@ -907,7 +928,7 @@ window.viewSessionGraph = async function(id, title) {
     container.innerHTML = '<div class="text-center text-muted" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><i class="bi bi-arrow-repeat spin" style="font-size:28px"></i><p style="margin-top:12px">Fetching graph from Atlas...</p></div>';
 
     try {
-        const res = await fetch(`${API_BASE_URL}/session/${id}/graph`);
+        const res = await apiFetch(`${API_BASE_URL}/session/${id}/graph`);
         if (res.ok) {
             const data = await res.json();
             if (!data.nodes?.length) {

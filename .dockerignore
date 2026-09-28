@@ -1,0 +1,19 @@
+.git
+.github
+.env
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.vscode
+.idea
+node_modules
+
+# Test suite and notebooks are not needed at runtime
+tests/
+tools/
+*.ipynb
+resources/research/
+
+# docs/ is referenced nowhere by the application
+docs/
